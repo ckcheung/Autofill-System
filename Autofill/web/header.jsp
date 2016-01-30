@@ -1,3 +1,4 @@
+<%@page import="Autofill.User"%>
 <div id='header'>
     <div class='container'>
         <div id='logo'>
@@ -35,12 +36,19 @@
         <div class='container'>
             <a href='?page=home'>Home</a>
             <%
-                if (session.getAttribute("user") != null) {
+                User user = (User)session.getAttribute("user");
+                if (user != null) {
             %>
             <a href='?page=record'>Records</a>
             <a href='?page=fill'>Autofill</a>
             <a href=''>Setting</a>
             <%
+                    if (user.getRole().equals("admin")) {
+            %>
+            <a href='?page=manage'>Manage</a>
+            <a href='?page=statistics'>Statistics</a>
+            <%
+                    }
                 }
             %>
         </div>

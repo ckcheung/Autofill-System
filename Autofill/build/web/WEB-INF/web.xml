@@ -5,16 +5,24 @@
         <servlet-class>Autofill.Controller</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>JsonSaver</servlet-name>
-        <servlet-class>Autofill.JsonSaver</servlet-class>
+        <servlet-name>DataSaver</servlet-name>
+        <servlet-class>Autofill.DataSaver</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>GroupSaver</servlet-name>
+        <servlet-class>Autofill.GroupSaver</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>Controller</servlet-name>
         <url-pattern>/Controller</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>JsonSaver</servlet-name>
-        <url-pattern>/JsonSaver</url-pattern>
+        <servlet-name>DataSaver</servlet-name>
+        <url-pattern>/DataSaver</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>GroupSaver</servlet-name>
+        <url-pattern>/GroupSaver</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

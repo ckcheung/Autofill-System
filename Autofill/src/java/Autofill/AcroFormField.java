@@ -8,6 +8,7 @@ public class AcroFormField implements Comparable<AcroFormField>{
     private String fieldLabel;
     private String fieldName;
     private String fieldValue;
+    private String group;
     private Rectangle position;
     private int page;
     private String personalFieldName;
@@ -40,6 +41,14 @@ public class AcroFormField implements Comparable<AcroFormField>{
         this.fieldValue = fieldValue;
     }
 
+    public String getGroup() {
+        return this.group;
+    }
+    
+    public void setGroup(String group) {
+        this.group = group;
+    }
+    
     public Rectangle getPosition() {
         return position;
     }

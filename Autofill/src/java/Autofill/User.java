@@ -4,11 +4,13 @@ public class User {
     private String username;
     private String role;
     private String data;
+    private String group;
     
     public User() {
         username = null;
         role = null;
         data = null;
+        group = null;
     }
     
     public void setUsername(String username) {
@@ -33,5 +35,13 @@ public class User {
     
     public String getData() {
         return this.data;
+    }
+    
+    public void setGroup(String group) {
+        this.group = group;
+    }
+    
+    public String getGroup() {
+        return this.group;
     }
 }

@@ -2,12 +2,41 @@ var currentRow;
 var originDataType;
 var originFieldName;
 var originFieldValue;
+var originFieldGroup;
+
+var currentGroupRow;
+var originGroupName;
 
 pageLoad = function() {
+	// Display group
+	var groupTable = document.getElementById("groupTable");
+	var inputGroupRow = document.getElementById("inputGroupRow")
+	
+	if (group.length > 0) {
+		var tr;
+		var td;	
+		var button;
+
+		for (var i=0; i<group.length; i++) {
+			tr = document.createElement("tr");
+			td = document.createElement("td");
+			td.innerHTML = group[i].name;
+			tr.appendChild(td);
+			td = document.createElement("td");
+			button = createGroupEditButton();
+			td.appendChild(button);
+			button = createGroupDeleteButton();
+			td.appendChild(button);
+			tr.appendChild(td);
+			groupTable.appendChild(tr);
+		}
+		groupTable.appendChild(inputGroupRow);
+	}
+
+	// Display data
 	var dataTable = document.getElementById("dataTable");
 	var inputRow = document.getElementById("inputRow");
 
-	// Output data
 	if (data.length > 0) {
 		var tr;
 		var td;	
@@ -25,6 +54,9 @@ pageLoad = function() {
 			td.innerHTML = data[i].value;
 			tr.appendChild(td);
 			td = document.createElement("td");
+			td.innerHTML = data[i].group;
+			tr.appendChild(td);
+			td = document.createElement("td");
 			button = createEditButton();
 			td.appendChild(button);
 			button = createDeleteButton();
@@ -34,6 +66,19 @@ pageLoad = function() {
 		}
 		dataTable.appendChild(inputRow);
 	}
+
+	var fieldGroupList = document.getElementById("fieldGroup");
+	var option;
+	for (var i=0; i<group.length; i++) {
+		option = document.createElement("option");
+		option.value = group[i].name;
+		option.innerHTML = group[i].name;
+		fieldGroupList.appendChild(option);
+	}
+
+	//$("#dataBox").hide();
+	//$("#groupBox").show();
+	$("#tabArea").tabs();
 }
 
 // Change input box to match the data type
@@ -54,44 +99,49 @@ listChanged = function() {
 	}
 }
 
-// Insert new record
-insertRecord = function() {
+// Insert new data record
+insertData = function() {
 	var dataType = document.getElementById('dataTypeList').value;
 	var name = document.getElementById('fieldName').value;
 	var value = document.getElementById('fieldValue').value;
+	var fieldGroup = document.getElementById('fieldGroup').value;
 
-	var field = {"dataType" : dataType, "name" : name, "value" : value};
+	var field = {"dataType" : dataType, "name" : name, "value" : value, "group" : fieldGroup};
 	data.push(field);
         
-        var dataTable = document.getElementById("dataTable");
+    var dataTable = document.getElementById("dataTable");
 	var inputRow = document.getElementById("inputRow");
-        var tr;
-        var td;	
-        var button;
+    var tr;
+    var td;	
+    var button;
 
-        tr = document.createElement("tr");
-        td = document.createElement("td");
-        td.innerHTML = dataType;
-        tr.appendChild(td);
-        td = document.createElement("td");
-        td.innerHTML = name;
-        tr.appendChild(td);
-        td = document.createElement("td");
-        td.innerHTML = value;
-        tr.appendChild(td);
-        td = document.createElement("td");
-        button = createEditButton();
-        td.appendChild(button);
-        button = createDeleteButton();
-        td.appendChild(button);
-        tr.appendChild(td);
-        dataTable.appendChild(tr);
-		
-        dataTable.appendChild(inputRow);
-        
-        document.getElementById('dataTypeList').value = "Text";
+    tr = document.createElement("tr");
+    td = document.createElement("td");
+    td.innerHTML = dataType;
+    tr.appendChild(td);
+    td = document.createElement("td");
+    td.innerHTML = name;
+    tr.appendChild(td);
+    td = document.createElement("td");
+    td.innerHTML = value;
+    tr.appendChild(td);
+	td = document.createElement("td");
+	td.innerHTML = fieldGroup;
+	tr.appendChild(td);
+    td = document.createElement("td");
+    button = createEditButton();
+    td.appendChild(button);
+    button = createDeleteButton();
+    td.appendChild(button);
+    tr.appendChild(td);
+    dataTable.appendChild(tr);
+	
+    dataTable.appendChild(inputRow);
+    
+    document.getElementById('dataTypeList').value = "Text";
 	document.getElementById('fieldName').value = "";
 	document.getElementById('fieldValue').value = "";
+	document.getElementById('fieldGroup').value = "";
         
 }
 
@@ -104,12 +154,12 @@ createEditButton = function() {
 }
 
 // Change the row structure for updating record
-editRecord = function(event) {
+editRecord = function() {
 	var source = event.target || event.srcElement;
 	var parent = source.parentElement;
 
 	if (currentRow != null) {
-		cancel();
+		cancelEdit();
 	}
 
 	currentRow = parent.parentElement;
@@ -132,6 +182,7 @@ editRecord = function(event) {
 	originDataType = currentRow.childNodes[0].innerHTML;
 	originFieldName = currentRow.childNodes[1].innerHTML;
 	originFieldValue = currentRow.childNodes[2].innerHTML;
+	originFieldGroup = currentRow.childNodes[3].innerHTML;
 
 	// Change Data Type, Field Name and Value column
 	currentRow.childNodes[0].removeChild(currentRow.childNodes[0].firstChild);
@@ -184,6 +235,23 @@ editRecord = function(event) {
 		fieldValueBox.setAttribute("id", "fieldValue");
 		$("fieldValue").datepicker({dateFormat: "dd/mm/yy"});
 	}
+
+	if (currentRow.childNodes[3].childNodes.length > 0) {
+		currentRow.childNodes[3].removeChild(currentRow.childNodes[3].firstChild);
+	}
+	var fieldGroupList = document.createElement("select");
+	option = document.createElement("option");
+	option.value = "";
+	option.innerHTML = "";
+	fieldGroupList.appendChild(option);
+	for (var i=0; i<group.length; i++) {
+		option = document.createElement("option");
+		option.value = group[i].name;
+		option.innerHTML = group[i].name;
+		fieldGroupList.appendChild(option);
+	}
+	fieldGroupList.value = originFieldGroup;
+	currentRow.childNodes[3].appendChild(fieldGroupList);
 }
 
 // Create delete button
@@ -207,8 +275,8 @@ deleteRecord = function() {
 
 	data.splice(i, 1);
         
-        var dataTable = document.getElementById("dataTable");
-        dataTable.removeChild(dataTable.childNodes[i+2]);
+    var dataTable = document.getElementById("dataTable");
+    dataTable.removeChild(dataTable.childNodes[i+2]);
 }
 
 // Cancel edit mode of a row
@@ -219,14 +287,16 @@ cancelEdit = function() {
 	currentRow.childNodes[0].innerHTML = originDataType;
 	currentRow.childNodes[1].innerHTML = originFieldName;
 	currentRow.childNodes[2].innerHTML = originFieldValue;
-	currentRow.childNodes[3].appendChild(createEditButton());
-	currentRow.childNodes[3].appendChild(createDeleteButton());
+	currentRow.childNodes[3].innerHTML = originFieldGroup;
+	currentRow.childNodes[4].appendChild(createEditButton());
+	currentRow.childNodes[4].appendChild(createDeleteButton());
 
 	// Reset global variable
 	currentRow = null;
 	originDataType = null;
 	originFieldName = null;
 	originFieldValue = null;
+	originFieldGroup = null;
 }
 
 // Update record according to the edited value
@@ -245,29 +315,213 @@ updateRecord = function(event) {
 	data[i].dataType = row.childNodes[0].firstChild.value;
 	data[i].name = row.childNodes[1].firstChild.value;
 	data[i].value = row.childNodes[2].firstChild.value;
+	data[i].group = row.childNodes[3].firstChild.value;
 	
-        row.childNodes[0].removeChild(row.childNodes[0].firstChild);
-        row.childNodes[0].innerHTML = data[i].dataType;
-        
-        row.childNodes[1].removeChild(row.childNodes[1].firstChild);
-        row.childNodes[1].innerHTML = data[i].name;
-        
-        row.childNodes[2].removeChild(row.childNodes[2].firstChild);
-        row.childNodes[2].innerHTML = data[i].value;
-        
-        while (row.lastChild.firstChild) {
-            row.lastChild.removeChild(row.lastChild.firstChild);
+    row.childNodes[0].removeChild(row.childNodes[0].firstChild);
+    row.childNodes[0].innerHTML = data[i].dataType;
+    
+    row.childNodes[1].removeChild(row.childNodes[1].firstChild);
+    row.childNodes[1].innerHTML = data[i].name;
+    
+    row.childNodes[2].removeChild(row.childNodes[2].firstChild);
+    row.childNodes[2].innerHTML = data[i].value;
+
+    row.childNodes[3].removeChild(row.childNodes[3].firstChild);
+    row.childNodes[3].innerHTML = data[i].group;
+    
+    while (row.lastChild.firstChild) {
+        row.lastChild.removeChild(row.lastChild.firstChild);
 	}	
-	currentRow.childNodes[3].appendChild(createEditButton());
-	currentRow.childNodes[3].appendChild(createDeleteButton());
+	currentRow.childNodes[4].appendChild(createEditButton());
+	currentRow.childNodes[4].appendChild(createDeleteButton());
+
+	currentRow = null;
+	originDataType = null;
+	originFieldName = null;
+	originFieldValue = null;
+	originFieldGroup = null;
 }
 
 // Save data to database
-sendAjax = function() {
+saveData = function() {
     $.ajax({
-        url: "JsonSaver",
+        url: "DataSaver",
         type: 'POST',
         data: JSON.stringify(data),
+        
+        success: function(data) {
+        	location.reload();
+        },
+        
+        error:function(data, status, error) {
+            alert("error: "+data+" status: "+status+" error:"+error);
+        }
+    });
+}
+
+// Create edit group record button
+createGroupEditButton = function() {
+	var button = document.createElement("button");
+	button.innerHTML = "Edit";
+	button.onclick = editGroupRecord;
+	return button;
+}
+
+// Edit group
+editGroupRecord = function(event) {
+	var source = event.target || event.srcElement;
+	var parent = source.parentElement;
+
+	if (currentGroupRow != null) {
+		cancelEditGroup();
+	}
+
+	currentGroupRow = parent.parentElement;
+
+	// Change Action column
+	while (parent.firstChild) {
+		parent.removeChild(parent.firstChild);
+	}
+	var button;
+	button = document.createElement("button");
+	button.innerHTML = "Update";
+	button.onclick = updateGroupRecord;
+	parent.appendChild(button);
+	button = document.createElement("button");
+	button.innerHTML = "Cancel";
+	button.onclick = cancelEditGroup;
+	parent.appendChild(button);
+
+	// Save origin data
+	originGroupName = currentGroupRow.childNodes[0].innerHTML;
+
+	// Change Group Name
+	currentGroupRow.childNodes[0].removeChild(currentGroupRow.childNodes[0].firstChild);
+	var GroupNameBox = document.createElement("input");
+	GroupNameBox.setAttribute("type", "text");
+	GroupNameBox.value = originGroupName;
+	currentGroupRow.childNodes[0].appendChild(GroupNameBox);
+
+}
+
+// Create delete group button
+createGroupDeleteButton = function() {
+	var button = document.createElement("button");
+	button.innerHTML = "Delete";
+	button.onclick = deleteGroupRecord;
+	return button;
+}
+
+// Delete group record
+deleteGroupRecord = function() {
+	var source = event.target || event.srcElement;
+	var row = source.parentElement.parentElement;
+
+	// Retrieve the index of the record
+	var i = -2;
+	while ((row = row.previousSibling) != null) {
+		i++;
+	}
+
+	// If some records belong to this group, reject the action
+	for (var j=0; j<data.length; j++) {
+		if (data[j].group == group[i].name) {
+			return;
+		}
+	}
+
+	group.splice(i, 1);
+        
+    var groupTable = document.getElementById("groupTable");
+    groupTable.removeChild(groupTable.childNodes[i+2]);
+}
+
+// Cancel group edit mode of a row
+cancelEditGroup = function() {
+	while (currentGroupRow.lastChild.firstChild) {
+        currentGroupRow.lastChild.removeChild(currentGroupRow.lastChild.firstChild);
+	}	
+	currentGroupRow.childNodes[0].innerHTML = originGroupName;
+	currentGroupRow.childNodes[1].appendChild(createGroupEditButton());
+	currentGroupRow.childNodes[1].appendChild(createGroupDeleteButton());
+
+	// Reset global variable
+	currentGroupRow = null;
+	originGroupName = null;
+}
+
+// Update group record according to the edited value
+updateGroupRecord = function(event) {
+	var source = event.target || event.srcElement;
+	var row = source.parentElement.parentElement;
+	var tempRow = row;
+
+	// Retrieve the index of the record
+	var i = -2;
+	while ((tempRow = tempRow.previousSibling) != null) {
+		i++;
+	}
+
+    // Update group
+	group[i].name = row.childNodes[0].firstChild.value;
+	
+    row.childNodes[0].removeChild(row.childNodes[0].firstChild);
+    row.childNodes[0].innerHTML = group[i].name;
+                
+    while (row.lastChild.firstChild) {
+        row.lastChild.removeChild(row.lastChild.firstChild);
+	}	
+	currentGroupRow.childNodes[1].appendChild(createGroupEditButton());
+	currentGroupRow.childNodes[1].appendChild(createGroupDeleteButton());
+
+	// Update record group name
+	for (var j=0; j<data.length; j++) {
+		if (data[j].group == originGroupName) {
+			data[j].group = group[i].name;
+		}
+	}
+
+
+	currentGroupRow = null;
+	originGroupName = null;
+}
+
+// Insert new group data record
+insertGroup = function() {
+	var name = document.getElementById('groupName').value;
+
+	var groupRecord = {"name" : name};
+	group.push(groupRecord);
+        
+    var groupTable = document.getElementById("groupTable");
+	var inputGroupRow = document.getElementById("inputGroupRow");
+    var tr;
+    var td;	
+    var button;
+
+    tr = document.createElement("tr");
+    td = document.createElement("td");
+    td.innerHTML = name;
+    tr.appendChild(td);
+    td = document.createElement("td");
+    button = createGroupEditButton();
+    td.appendChild(button);
+    button = createGroupDeleteButton();
+    td.appendChild(button);
+    tr.appendChild(td);
+    groupTable.appendChild(tr);
+    groupTable.appendChild(inputGroupRow);
+    
+	document.getElementById('groupName').value = "";
+        
+}
+
+// Save group list to database
+saveGroup = function() {
+    $.ajax({
+        url: "GroupSaver",
+        type: 'POST',
+        data: JSON.stringify(group),
         
         success: function(data) {},
         
@@ -275,5 +529,18 @@ sendAjax = function() {
             alert("error: "+data+" status: "+status+" error:"+error);
         }
     });
+    saveData();
 }
+
+/*
+displayGroup = function() {
+	$("#dataBox").hide();
+	$("#groupBox").show();
+}
+
+displayData = function() {
+	$("#groupBox").hide();
+	$("#dataBox").show();
+}
+*/
 

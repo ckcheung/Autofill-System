@@ -25,6 +25,15 @@ body {
 	padding:0;
 }
 
+#tabArea {
+	font-size:	12px;
+}
+
+#tabArea>div>table {
+	font-size:	12px;
+}
+
+
 #dataTable {
 	color: #000000;
 	/*margin:	auto;*/

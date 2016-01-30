@@ -5,7 +5,9 @@
         <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'>
         <title>FYP</title>
         <script>
-            var data = JSON.parse('${user.data}');  // Decode JSON
+            // Decode JSON
+            var data = JSON.parse('${user.data}');
+            var group = JSON.parse('${user.group}');
         </script>
         <script src='js/record.js'></script>
         <script src='http://code.jquery.com/jquery-latest.js'></script>
@@ -17,26 +19,55 @@
         <%@include file="header.jsp" %>
         <div id='main'>
             <div class='container'>
-                    <table id='dataTable'>
-                        <tr>
-                            <th>Data Type</th>
-                            <th>Field Name</th>
-                            <th>Value</th>
-                            <th>Action</th>
-                        </tr>
-                        <tr id='inputRow'>
-                            <td>
-                                <select id='dataTypeList' onchange='listChanged()'>
-                                    <option value='Text' selected>Text</option>
-                                    <option value='Date'>Date</option>
-                                </select>
-                            </td>
-                            <td><input type='text' id='fieldName' /></td>
-                            <td><input type='text' id='fieldValue' /></td>
-                            <td><button onclick='insertRecord()'>Insert</button></td>
-                        </tr>
-                    </table>
-                <button onclick='sendAjax()'>Save</button>
+                <div id='tabArea'>
+                    <ul>
+                        <li><a href='#groupBox'>Group</a></li>
+                        <li><a href='#dataBox'>Data</a></li>
+                    </ul>
+                    <div id='groupBox'>
+                        <table id='groupTable'>
+                            <tr>
+                                <th>Group Name</th>
+                                <th>Action</th>
+                            </tr>
+                            <tr id='inputGroupRow'>
+                                <td><input type='text' id='groupName' /></td>
+                                <td><button onclick='insertGroup()'>Insert</button></td>
+                            </tr>
+                        </table>
+                        <br/>
+                        <button onclick='saveGroup()'>Save Changes</button>
+                    </div>
+                    <div id='dataBox'>
+                        <table id='dataTable'>
+                            <tr>
+                                <th>Data Type</th>
+                                <th>Field Name</th>
+                                <th>Value</th>
+                                <th>Field Group</th>
+                                <th>Action</th>
+                            </tr>
+                            <tr id='inputRow'>
+                                <td>
+                                    <select id='dataTypeList' onchange='listChanged()'>
+                                        <option value='Text' selected>Text</option>
+                                        <option value='Date'>Date</option>
+                                    </select>
+                                </td>
+                                <td><input type='text' id='fieldName' /></td>
+                                <td><input type='text' id='fieldValue' /></td>
+                                <td>
+                                    <select id='fieldGroup'>
+                                        <option value='' selected></option>
+                                    </select>
+                                </td>
+                                <td><button onclick='insertData()'>Insert</button></td>
+                            </tr>
+                        </table>
+                        <br/>
+                        <button onclick='saveData()'>Save Changes</button>
+                    </div>
+                </div>
             </div>
         </div>
     </body>

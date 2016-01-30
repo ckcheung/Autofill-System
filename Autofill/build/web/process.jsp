@@ -27,8 +27,17 @@
                             <th>Modify</th>
                         </tr>
                         <%  
+                            String preGroup = "";
                             for (AcroFormField field : fields) {
                                 if (field.getFieldLabel() != null && field.getFieldLabel().length() != 0) { 
+                                    if (field.getGroup()!= null && !field.getGroup().equals(preGroup)) {     
+                                        preGroup = field.getGroup();
+                        %>
+                        <tr>
+                            <td colspan='3'><%=field.getGroup()%></td>
+                        </tr>
+                        <%
+                                    }
                         %>
                         <tr>
                             <td><%=field.getFieldLabel()%></td>
