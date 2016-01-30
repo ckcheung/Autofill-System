@@ -1,0 +1,525 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>Dictionary.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCoverage analysis of project &quot;Autofill&quot; (powered by JaCoCo from EclEmma)</a> &gt; <a href="index.source.html" class="el_package">Autofill</a> &gt; <span class="el_source">Dictionary.java</span></div><h1>Dictionary.java</h1><pre class="source lang-java linenums">package Autofill;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+
+
+public class Dictionary {
+    
+    private static Dictionary instance;
+    private static final String DBURL = &quot;jdbc:mysql://127.0.0.1:3307/Autofill&quot;;
+    private static final String DBUsername = &quot;root&quot;;
+    private static final String DBPassword = &quot;admin&quot;;
+    
+    public static Dictionary getInstance() {
+<span class="fc bfc" id="L18" title="All 2 branches covered.">        if (instance == null) {</span>
+<span class="fc" id="L19">            instance = new Dictionary();</span>
+        }
+<span class="fc" id="L21">        return instance;</span>
+    }
+    
+<span class="fc" id="L24">    private Dictionary() {</span>
+        
+<span class="fc" id="L26">    }</span>
+    
+    public ArrayList&lt;String&gt; getSynonyms(String word) {
+<span class="fc" id="L29">        ArrayList&lt;String&gt; synonyms = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L30">        Connection con = null;</span>
+<span class="fc" id="L31">        PreparedStatement pstmt = null;</span>
+<span class="fc" id="L32">        ResultSet rs = null;</span>
+        
+        try {
+<span class="fc" id="L35">            String standard = getStandardWord(word);</span>
+
+<span class="nc" id="L37">            con = DriverManager.getConnection(DBURL, DBUsername, DBPassword);</span>
+<span class="nc" id="L38">            pstmt = con.prepareStatement(</span>
+                &quot;SELECT synonym FROM Dictionary WHERE standard = ? OR standard = ? ORDER BY probability&quot;
+            );
+<span class="nc" id="L41">            pstmt.setString(1, word);</span>
+<span class="nc" id="L42">            pstmt.setString(2, standard); </span>
+<span class="nc" id="L43">            rs = pstmt.executeQuery();</span>
+<span class="nc bnc" id="L44" title="All 2 branches missed.">            while (rs.next()) {</span>
+<span class="nc" id="L45">                synonyms.add(rs.getString(&quot;synonym&quot;));</span>
+            }
+<span class="fc" id="L47">        } catch (Exception e) {</span>
+            
+        } finally {
+<span class="nc" id="L50">            try {</span>
+<span class="pc bpc" id="L51" title="5 of 6 branches missed.">                if (con != null) {con.close();}</span>
+<span class="pc bpc" id="L52" title="5 of 6 branches missed.">                if (pstmt != null) {con.close();}</span>
+<span class="pc bpc" id="L53" title="5 of 6 branches missed.">                if (rs != null) {con.close();}</span>
+<span class="nc" id="L54">            } catch (Exception e) {</span>
+                
+<span class="pc" id="L56">            }</span>
+<span class="nc" id="L57">        }</span>
+
+<span class="fc" id="L59">        return synonyms;</span>
+    }
+    
+    public String getStandardWord(String word) {
+<span class="fc" id="L63">        String standard = &quot;&quot;;</span>
+<span class="fc" id="L64">        Connection con = null;</span>
+<span class="fc" id="L65">        PreparedStatement pstmt = null;</span>
+<span class="fc" id="L66">        ResultSet rs = null;</span>
+        
+        try {
+<span class="nc" id="L69">            con = DriverManager.getConnection(DBURL, DBUsername, DBPassword);</span>
+<span class="nc" id="L70">            pstmt = con.prepareStatement(</span>
+                &quot;SELECT standard FROM Dictionary WHERE synonym = ? ORDER BY probability&quot;
+            );
+<span class="nc" id="L73">            pstmt.setString(1, word);</span>
+<span class="nc" id="L74">            rs = pstmt.executeQuery();</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">            if (rs.next()) {</span>
+<span class="nc" id="L76">                standard = rs.getString(&quot;standard&quot;);</span>
+            }
+<span class="fc" id="L78">        } catch (Exception e) {</span>
+            
+        } finally {
+<span class="nc" id="L81">            try {</span>
+<span class="pc bpc" id="L82" title="5 of 6 branches missed.">                if (con != null) {con.close();}</span>
+<span class="pc bpc" id="L83" title="5 of 6 branches missed.">                if (pstmt != null) {con.close();}</span>
+<span class="pc bpc" id="L84" title="5 of 6 branches missed.">                if (rs != null) {con.close();}</span>
+<span class="nc" id="L85">            } catch (Exception e) {</span>
+                
+<span class="pc" id="L87">            } </span>
+<span class="nc" id="L88">        }</span>
+        
+<span class="fc" id="L90">        return standard;</span>
+    }
+    
+    public ArrayList&lt;String&gt; getSamePrefixWords(String word) {
+<span class="fc" id="L94">        ArrayList&lt;String&gt; samePrefixWords = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L95">        Connection con = null;</span>
+<span class="fc" id="L96">        PreparedStatement pstmt = null;</span>
+<span class="fc" id="L97">        ResultSet rs = null;</span>
+        
+        try {
+<span class="nc" id="L100">            con = DriverManager.getConnection(DBURL, DBUsername, DBPassword);</span>
+            // Create search key
+<span class="nc" id="L102">            StringBuilder strBuilder = new StringBuilder(word);</span>
+<span class="nc" id="L103">            strBuilder.insert(word.length(), &quot;%&quot;);</span>
+<span class="nc bnc" id="L104" title="All 2 branches missed.">            for (int i=word.length()-1; i&gt;0; i--) {</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">                if (Character.isUpperCase(word.charAt(i))) {</span>
+<span class="nc" id="L106">                    strBuilder.insert(i, &quot; %&quot;);</span>
+                }
+            }
+<span class="nc" id="L109">            String searchKey = strBuilder.toString().toLowerCase();</span>
+
+<span class="nc" id="L111">            pstmt = con.prepareStatement(</span>
+                &quot;SELECT standard FROM Dictionary WHERE standard LIKE ?&quot;
+            );
+<span class="nc" id="L114">            pstmt.setString(1, searchKey);</span>
+<span class="nc" id="L115">            rs = pstmt.executeQuery();</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">            while (rs.next()) {</span>
+<span class="nc" id="L117">                samePrefixWords.add(rs.getString(&quot;standard&quot;));</span>
+            }
+
+<span class="nc" id="L120">            pstmt = con.prepareStatement(</span>
+                &quot;SELECT synonym FROM Dictionary WHERE synonym LIKE ?&quot;
+            );
+<span class="nc" id="L123">            pstmt.setString(1, searchKey);</span>
+<span class="nc" id="L124">            rs = pstmt.executeQuery();</span>
+<span class="nc bnc" id="L125" title="All 2 branches missed.">            while (rs.next()) {</span>
+<span class="nc" id="L126">                samePrefixWords.add(rs.getString(&quot;synonym&quot;));</span>
+            }
+<span class="fc" id="L128">        } catch (Exception e)    {</span>
+            
+        } finally {
+<span class="nc" id="L131">            try {</span>
+<span class="pc bpc" id="L132" title="5 of 6 branches missed.">                if (con != null) {con.close();}</span>
+<span class="pc bpc" id="L133" title="5 of 6 branches missed.">                if (pstmt != null) {con.close();}</span>
+<span class="pc bpc" id="L134" title="5 of 6 branches missed.">                if (rs != null) {con.close();}</span>
+<span class="nc" id="L135">            } catch (Exception e) {</span>
+                
+<span class="pc" id="L137">            }</span>
+<span class="nc" id="L138">        }</span>
+        
+<span class="fc" id="L140">        return samePrefixWords;</span>
+    }
+    
+    public boolean addSynonym(String word1, String word2) {
+<span class="fc" id="L144">        boolean successful = false;</span>
+<span class="fc" id="L145">        Connection con = null;</span>
+<span class="fc" id="L146">        PreparedStatement pstmt = null;</span>
+<span class="fc" id="L147">        ResultSet rs = null;</span>
+        
+        try {
+<span class="nc" id="L150">            con = DriverManager.getConnection(DBURL, DBUsername, DBPassword);</span>
+<span class="nc" id="L151">            pstmt = con.prepareStatement(</span>
+                &quot;INSERT INTO Dictionary VALUES (?, ?, ?, ?)&quot;
+            );
+<span class="nc" id="L154">            pstmt.setString(1, word1);</span>
+<span class="nc" id="L155">            pstmt.setString(2, word2);</span>
+<span class="nc" id="L156">            pstmt.setFloat(3, 0.5f);</span>
+<span class="nc" id="L157">            pstmt.setString(4, &quot;[{\&quot;word1\&quot;: \&quot;&quot; + word1 + &quot;\&quot;, \&quot;word2\&quot;: \&quot;&quot; + word2 + &quot;\&quot;, \&quot;probability\&quot;: \&quot;0.5\&quot;}]&quot;);</span>
+<span class="nc" id="L158">            pstmt.executeUpdate();</span>
+<span class="nc" id="L159">            System.out.println(pstmt);</span>
+            
+<span class="nc" id="L161">            successful = true;</span>
+<span class="fc" id="L162">        } catch (Exception e) {</span>
+            
+        } finally {
+<span class="nc" id="L165">            try {</span>
+<span class="pc bpc" id="L166" title="5 of 6 branches missed.">                if (con != null) {con.close();}</span>
+<span class="pc bpc" id="L167" title="5 of 6 branches missed.">                if (pstmt != null) {con.close();}</span>
+<span class="pc bpc" id="L168" title="5 of 6 branches missed.">                if (rs != null) {con.close();}</span>
+<span class="nc" id="L169">            } catch (Exception e) {</span>
+                
+<span class="pc" id="L171">            }</span>
+<span class="nc" id="L172">        }</span>
+<span class="fc" id="L173">        return successful;</span>
+    }
+    
+    public boolean removeSynonym(String word1, String word2) {
+<span class="fc" id="L177">        boolean successful = false;</span>
+<span class="fc" id="L178">        Connection con = null;</span>
+<span class="fc" id="L179">        PreparedStatement pstmt = null;</span>
+<span class="fc" id="L180">        ResultSet rs = null;</span>
+        
+        try {
+<span class="nc" id="L183">            con = DriverManager.getConnection(DBURL, DBUsername, DBPassword);</span>
+<span class="nc" id="L184">            pstmt = con.prepareStatement(</span>
+                &quot;DELETE FROM Dictionary WHERE standard = ? AND synonym = ?&quot;
+            );
+<span class="nc" id="L187">            pstmt.setString(1, word1);</span>
+<span class="nc" id="L188">            pstmt.setString(2, word2);</span>
+<span class="nc" id="L189">            System.out.println(pstmt);</span>
+<span class="nc" id="L190">            pstmt.executeUpdate();</span>
+<span class="nc" id="L191">            successful = true;</span>
+<span class="fc" id="L192">        } catch (Exception e) {</span>
+            
+        } finally {
+<span class="nc" id="L195">            try {</span>
+<span class="pc bpc" id="L196" title="5 of 6 branches missed.">                if (con != null) {con.close();}</span>
+<span class="pc bpc" id="L197" title="5 of 6 branches missed.">                if (pstmt != null) {con.close();}</span>
+<span class="pc bpc" id="L198" title="5 of 6 branches missed.">                if (rs != null) {con.close();}</span>
+<span class="nc" id="L199">            } catch (Exception e) {</span>
+                
+<span class="pc" id="L201">            }</span>
+<span class="nc" id="L202">        }</span>
+        
+<span class="fc" id="L204">        return successful;</span>
+    }
+    
+    public boolean addProbability(String word1, String word2) {
+<span class="fc" id="L208">        boolean adjusted = false;</span>
+<span class="fc" id="L209">        Float adjustment = 0.1f;</span>
+<span class="fc" id="L210">        Connection con = null;</span>
+<span class="fc" id="L211">        PreparedStatement pstmt = null;</span>
+<span class="fc" id="L212">        ResultSet rs = null;</span>
+        // personalFieldName = word1
+        // field.getFieldName().toLowerCase() = word2
+        try {
+<span class="nc" id="L216">            con = DriverManager.getConnection(DBURL, DBUsername, DBPassword);</span>
+<span class="nc" id="L217">            pstmt = con.prepareStatement(</span>
+                &quot;SELECT probability, history FROM Dictionary WHERE standard = ? AND synonym = ?&quot;
+            );                      
+<span class="nc" id="L220">            pstmt.setString(1, word1);</span>
+<span class="nc" id="L221">            pstmt.setString(2, word2);</span>
+<span class="nc" id="L222">            System.out.println(&quot;TEST3 - &quot; + pstmt);</span>
+<span class="nc" id="L223">            rs = pstmt.executeQuery();</span>
+<span class="nc bnc" id="L224" title="All 2 branches missed.">            if (rs.next()) {</span>
+<span class="nc" id="L225">                float probability = rs.getFloat(&quot;probability&quot;);</span>
+<span class="nc" id="L226">                String history = rs.getString(&quot;history&quot;);</span>
+<span class="nc" id="L227">                probability = Math.min(1, Math.round((probability + adjustment)*10)/10);</span>
+<span class="nc" id="L228">                String newHistory = addHistory(history, formatHistoryRecord(word1, word2, probability));</span>
+<span class="nc" id="L229">                pstmt = con.prepareStatement(</span>
+                    &quot;UPDATE Dictionary SET probability = ?, history = ? WHERE standard = ? AND synonym = ?&quot;    
+                );
+<span class="nc" id="L232">                pstmt.setFloat(1, probability);</span>
+<span class="nc" id="L233">                pstmt.setString(2, newHistory);</span>
+<span class="nc" id="L234">                pstmt.setString(3, word1);</span>
+<span class="nc" id="L235">                pstmt.setString(4, word2);</span>
+<span class="nc" id="L236">                pstmt.executeUpdate();</span>
+                //System.out.println(&quot;History : &quot; + addHistory(history, formatHistoryRecord(personalFieldName, field.getFieldName().toLowerCase(), probability)));
+<span class="nc" id="L238">                adjusted = true;</span>
+            }
+
+<span class="nc bnc" id="L241" title="All 2 branches missed.">            if (!adjusted) {</span>
+                // Synonym to standard matching
+<span class="nc" id="L243">                pstmt = con.prepareStatement(</span>
+                    &quot;SELECT probability, history FROM Dictionary WHERE standard = ? AND synonym = ?&quot;
+                ); 
+<span class="nc" id="L246">                pstmt.setString(1, word2);</span>
+<span class="nc" id="L247">                pstmt.setString(2, word1);</span>
+<span class="nc" id="L248">                System.out.println(&quot;TEST4 - &quot; + pstmt);</span>
+<span class="nc" id="L249">                rs = pstmt.executeQuery();</span>
+<span class="nc bnc" id="L250" title="All 2 branches missed.">                if (rs.next()) {</span>
+<span class="nc" id="L251">                    System.out.println(&quot;TEST4&quot;);</span>
+<span class="nc" id="L252">                    float probability = rs.getFloat(&quot;probability&quot;);</span>
+<span class="nc" id="L253">                    String history = rs.getString(&quot;history&quot;);</span>
+<span class="nc" id="L254">                    probability = Math.min(1, Math.round((probability + adjustment)*10)/10);</span>
+<span class="nc" id="L255">                    String newHistory = addHistory(history, formatHistoryRecord(word2, word1, probability));</span>
+<span class="nc" id="L256">                    pstmt = con.prepareStatement(</span>
+                        &quot;UPDATE Dictionary SET probability = ?, history = ? WHERE standard = ? AND synonym = ?&quot;    
+                    );
+<span class="nc" id="L259">                    pstmt.setFloat(1, probability);</span>
+<span class="nc" id="L260">                    pstmt.setString(2, newHistory);</span>
+<span class="nc" id="L261">                    pstmt.setString(3, word2);</span>
+<span class="nc" id="L262">                    pstmt.setString(4, word1);</span>
+<span class="nc" id="L263">                    System.out.println(pstmt);</span>
+<span class="nc" id="L264">                    pstmt.executeUpdate();</span>
+                    //System.out.println(&quot;History : &quot; + addHistory(history, formatHistoryRecord(field.getPersonalFieldName(), field.getFieldName().toLowerCase(), probability)));
+<span class="nc" id="L266">                    adjusted = true;</span>
+                }
+            }
+            
+<span class="nc bnc" id="L270" title="All 2 branches missed.">            if (!adjusted) {</span>
+                // Synonym to synonym matching
+<span class="nc" id="L272">                pstmt = con.prepareStatement(</span>
+                    &quot;SELECT D1.standard As standard, D1.probability As probability, D1.history As history FROM Dictionary D1, Dictionary D2 WHERE D1.standard = D2.standard AND D1.synonym = ? AND D2.synonym = ?&quot;
+                );
+<span class="nc" id="L275">                pstmt.setString(1, word2);</span>
+<span class="nc" id="L276">                pstmt.setString(2, word1);</span>
+<span class="nc" id="L277">                rs = pstmt.executeQuery();</span>
+                String standard;
+                String history;
+                float probability;
+<span class="nc bnc" id="L281" title="All 2 branches missed.">                if (rs.next()) {</span>
+<span class="nc" id="L282">                    standard = rs.getString(&quot;standard&quot;);</span>
+<span class="nc" id="L283">                    history = rs.getString(&quot;history&quot;);</span>
+<span class="nc" id="L284">                    probability = rs.getFloat(&quot;probability&quot;);</span>
+<span class="nc" id="L285">                    probability = Math.min(1, (float)(Math.round((probability + adjustment)*10))/10);</span>
+
+<span class="nc" id="L287">                    String newHistory = addHistory(history, formatHistoryRecord(word1, word2, probability));</span>
+<span class="nc" id="L288">                    pstmt = con.prepareStatement(</span>
+                        &quot;UPDATE Dictionary SET probability = ROUND(LEAST(1, probability + 0.1), 1), history = ? WHERE standard = ? AND (synonym = ? OR synonym = ?)&quot;
+                    ); 
+<span class="nc" id="L291">                    pstmt.setString(1, newHistory);</span>
+<span class="nc" id="L292">                    pstmt.setString(2, standard);</span>
+<span class="nc" id="L293">                    pstmt.setString(3, word2);</span>
+<span class="nc" id="L294">                    pstmt.setString(4, word1);</span>
+<span class="nc" id="L295">                    System.out.println(&quot;TEST5 - &quot; + pstmt);</span>
+                    //System.out.println(&quot;History : &quot; + addHistory(history, formatHistoryRecord(personalFieldName, field.getFieldName().toLowerCase(), probability)));
+<span class="nc" id="L297">                    pstmt.executeUpdate();</span>
+<span class="nc" id="L298">                    adjusted = true;</span>
+                }
+            }
+<span class="fc" id="L301">        } catch (Exception e) {</span>
+            
+        } finally {
+<span class="nc" id="L304">            try {</span>
+<span class="pc bpc" id="L305" title="5 of 6 branches missed.">                if (con != null) {con.close();}</span>
+<span class="pc bpc" id="L306" title="5 of 6 branches missed.">                if (pstmt != null) {con.close();}</span>
+<span class="pc bpc" id="L307" title="5 of 6 branches missed.">                if (rs != null) {con.close();}</span>
+<span class="nc" id="L308">            } catch (Exception e) {</span>
+                
+<span class="pc" id="L310">            }</span>
+<span class="nc" id="L311">        }</span>
+<span class="fc" id="L312">        return adjusted;</span>
+        //End
+    }
+    
+    public boolean reduceProbability(String word1, String word2) {
+        //Start
+<span class="fc" id="L318">        boolean adjusted = false;</span>
+<span class="fc" id="L319">        Connection con = null;</span>
+<span class="fc" id="L320">        PreparedStatement pstmt = null;</span>
+<span class="fc" id="L321">        ResultSet rs = null;</span>
+<span class="fc" id="L322">        float adjustment = -0.1f;</span>
+        
+        // word1 = field.getPersonalFieldName()
+        // word2 = field.getFieldName().toLowerCase()
+        try {
+<span class="nc" id="L327">            con = DriverManager.getConnection(DBURL, DBUsername, DBPassword);</span>
+<span class="nc" id="L328">            pstmt = con.prepareStatement(</span>
+                &quot;SELECT probability, history FROM Dictionary WHERE standard = ? AND synonym = ?&quot;
+            );
+<span class="nc" id="L331">            pstmt.setString(1, word1);</span>
+<span class="nc" id="L332">            pstmt.setString(2, word2);</span>
+            //System.out.println(&quot;TEST &quot; + pstmt);
+<span class="nc" id="L334">            rs = pstmt.executeQuery();</span>
+<span class="nc bnc" id="L335" title="All 2 branches missed.">            if (rs.next()) {</span>
+<span class="nc" id="L336">                float probability = rs.getFloat(&quot;probability&quot;);</span>
+<span class="nc" id="L337">                String history = rs.getString(&quot;history&quot;);</span>
+<span class="nc" id="L338">                probability = Math.max(0, (float)(Math.round((probability + adjustment)*10))/10);</span>
+<span class="nc bnc" id="L339" title="All 2 branches missed.">                if (probability == 0) {</span>
+                    // Remove entry
+                    /*
+                    pstmt = con.prepareStatement(
+                        &quot;DELETE FROM Dictionary WHERE standard = ? AND synonym = ?&quot;
+                    );
+                    pstmt.setString(1, word1);
+                    pstmt.setString(2, word2);
+                    pstmt.executeUpdate();
+                    */
+<span class="nc" id="L349">                    removeSynonym(word1, word2);</span>
+                } else {
+                    // Update probability
+<span class="nc" id="L352">                    String newHistory = addHistory(history, formatHistoryRecord(word1, word2, probability));</span>
+<span class="nc" id="L353">                    pstmt = con.prepareStatement(</span>
+                        &quot;UPDATE Dictionary SET probability = ?, history = ? WHERE standard = ? AND synonym = ?&quot;
+                    );
+<span class="nc" id="L356">                    pstmt.setFloat(1, probability);</span>
+<span class="nc" id="L357">                    pstmt.setString(2, newHistory);</span>
+<span class="nc" id="L358">                    pstmt.setString(3, word1);</span>
+<span class="nc" id="L359">                    pstmt.setString(4, word2);</span>
+<span class="nc" id="L360">                    pstmt.executeUpdate();                                        </span>
+                    //System.out.println(&quot;History : &quot; + addHistory(history, formatHistoryRecord(field.getPersonalFieldName(), field.getFieldName().toLowerCase(), probability)));
+                }
+                //System.out.println(&quot;TEST2 &quot; + pstmt);
+<span class="nc" id="L364">                adjusted = true;</span>
+            } 
+            
+<span class="nc bnc" id="L367" title="All 2 branches missed.">            if (!adjusted) {</span>
+                // Synonym to standard matching
+<span class="nc" id="L369">                pstmt = con.prepareStatement(</span>
+                    &quot;SELECT probability, history FROM Dictionary WHERE standard = ? AND synonym = ?&quot;
+                );
+<span class="nc" id="L372">                pstmt.setString(1, word2);</span>
+<span class="nc" id="L373">                pstmt.setString(2, word1);</span>
+<span class="nc" id="L374">                rs = pstmt.executeQuery();</span>
+<span class="nc bnc" id="L375" title="All 2 branches missed.">                if (rs.next()) {</span>
+<span class="nc" id="L376">                    float probability = rs.getFloat(&quot;probability&quot;);</span>
+<span class="nc" id="L377">                    String history = rs.getString(&quot;history&quot;);</span>
+<span class="nc" id="L378">                    probability = Math.max(0, (float)(Math.round((probability + adjustment)*10))/10);</span>
+<span class="nc bnc" id="L379" title="All 2 branches missed.">                    if (probability == 0) {</span>
+                        // Remove entry
+<span class="nc" id="L381">                        removeSynonym(word2, word1);</span>
+                    } else {
+                        // Update probability
+<span class="nc" id="L384">                        String newHistory = addHistory(history, formatHistoryRecord(word1, word2, probability));</span>
+<span class="nc" id="L385">                        pstmt = con.prepareStatement(</span>
+                            &quot;UPDATE Dictionary SET probability = ?, history = ? WHERE standard = ? AND synonym = ?&quot;
+                        );
+<span class="nc" id="L388">                        pstmt.setFloat(1, probability);</span>
+<span class="nc" id="L389">                        pstmt.setString(2, newHistory);</span>
+<span class="nc" id="L390">                        pstmt.setString(3, word2);</span>
+<span class="nc" id="L391">                        pstmt.setString(4, word1);</span>
+<span class="nc" id="L392">                        pstmt.executeUpdate();                                        </span>
+                    }
+<span class="nc" id="L394">                    adjusted = true;</span>
+                }
+            }
+            
+<span class="nc bnc" id="L398" title="All 2 branches missed.">            if (!adjusted) {</span>
+                // Synonym to synonym matching
+<span class="nc" id="L400">                pstmt = con.prepareStatement(</span>
+                    &quot;SELECT D1.standard As standard, D1.probability As probability, D1.history As history FROM Dictionary D1, Dictionary D2 WHERE D1.standard = D2.standard AND D1.synonym = ? AND D2.synonym = ?&quot;
+                );
+<span class="nc" id="L403">                pstmt.setString(1, word1);</span>
+<span class="nc" id="L404">                pstmt.setString(2, word2);</span>
+<span class="nc" id="L405">                System.out.println(&quot;TEST7 - &quot; + pstmt);</span>
+<span class="nc" id="L406">                rs = pstmt.executeQuery();</span>
+                String standard;
+                String history;
+                Float probability;
+<span class="nc bnc" id="L410" title="All 2 branches missed.">                if (rs.next()) {</span>
+<span class="nc" id="L411">                    standard = rs.getString(&quot;standard&quot;);</span>
+<span class="nc" id="L412">                    history = rs.getString(&quot;history&quot;);</span>
+<span class="nc" id="L413">                    probability = rs.getFloat(&quot;probability&quot;);</span>
+<span class="nc" id="L414">                    probability = (float)(Math.round((probability - 0.1f)*10))/10;</span>
+<span class="nc bnc" id="L415" title="All 2 branches missed.">                    if (probability == 0) {</span>
+                        //remove entry
+<span class="nc" id="L417">                        removeSynonym(standard, word1);</span>
+                    } else {
+<span class="nc" id="L419">                        String newHistory = addHistory(history, formatHistoryRecord(word1, word2, probability));</span>
+<span class="nc" id="L420">                        pstmt = con.prepareStatement(</span>
+                            &quot;UPDATE Dictionary SET probability = ROUND(LEAST(1, probability - 0.1), 1), history = ? WHERE standard = ? AND (synonym = ? OR synonym = ?)&quot; //need separated update
+                        ); 
+<span class="nc" id="L423">                        pstmt.setString(1, newHistory);</span>
+<span class="nc" id="L424">                        pstmt.setString(2, standard);</span>
+<span class="nc" id="L425">                        pstmt.setString(3, word1);</span>
+<span class="nc" id="L426">                        pstmt.setString(4, word2);</span>
+                        //System.out.println(&quot;TEST6 - &quot; + pstmt);
+<span class="nc" id="L428">                        pstmt.executeUpdate();</span>
+                    }
+<span class="nc" id="L430">                    adjusted = true;</span>
+                }
+            }
+        
+<span class="fc" id="L434">        } catch (Exception e) {</span>
+    
+        } finally {
+<span class="nc" id="L437">            try {</span>
+<span class="pc bpc" id="L438" title="5 of 6 branches missed.">                if (con != null) {con.close();}</span>
+<span class="pc bpc" id="L439" title="5 of 6 branches missed.">                if (pstmt != null) {con.close();}</span>
+<span class="pc bpc" id="L440" title="5 of 6 branches missed.">                if (rs != null) {con.close();}</span>
+<span class="nc" id="L441">            } catch (Exception e) {</span>
+                
+<span class="pc" id="L443">            }</span>
+<span class="nc" id="L444">        }</span>
+        
+<span class="fc" id="L446">        return adjusted;</span>
+    }
+        
+    public ArrayList&lt;Statistics&gt; getHistory() {
+<span class="fc" id="L450">        ArrayList&lt;Statistics&gt; statistics = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L451">        Connection con = null;</span>
+<span class="fc" id="L452">        PreparedStatement pstmt = null;</span>
+<span class="fc" id="L453">        ResultSet rs = null;</span>
+        
+        try {
+<span class="nc" id="L456">            con = DriverManager.getConnection(DBURL, DBUsername, DBPassword);</span>
+<span class="nc" id="L457">            pstmt = con.prepareStatement(</span>
+                &quot;SELECT standard, synonym, history FROM Dictionary ORDER BY standard&quot;
+            );
+<span class="nc" id="L460">            rs = pstmt.executeQuery();</span>
+<span class="nc bnc" id="L461" title="All 2 branches missed.">            while (rs.next()) {</span>
+<span class="nc" id="L462">                Statistics s = new Statistics();</span>
+<span class="nc" id="L463">                s.setStandard(rs.getString(&quot;standard&quot;));</span>
+<span class="nc" id="L464">                s.setSynonym(rs.getString(&quot;synonym&quot;));</span>
+<span class="nc bnc" id="L465" title="All 2 branches missed.">                if (rs.getString(&quot;history&quot;) != null) {</span>
+<span class="nc" id="L466">                    s.setHistory(rs.getString(&quot;history&quot;));</span>
+                } else {
+<span class="nc" id="L468">                    s.setHistory(&quot;[]&quot;);</span>
+                }
+<span class="nc" id="L470">                statistics.add(s);</span>
+<span class="nc" id="L471">            }</span>
+<span class="fc" id="L472">        } catch (Exception e) {</span>
+            
+        } finally {
+<span class="nc" id="L475">            try {</span>
+<span class="pc bpc" id="L476" title="5 of 6 branches missed.">                if (con != null) {con.close();}</span>
+<span class="pc bpc" id="L477" title="5 of 6 branches missed.">                if (pstmt != null) {con.close();}</span>
+<span class="pc bpc" id="L478" title="5 of 6 branches missed.">                if (rs != null) {con.close();}</span>
+<span class="nc" id="L479">            } catch (Exception e) {</span>
+                
+<span class="pc" id="L481">            }</span>
+<span class="nc" id="L482">        }</span>
+        
+<span class="fc" id="L484">        return statistics;</span>
+    }
+    
+    public String formatHistoryRecord(String word1, String word2, float probability) {
+<span class="fc" id="L488">        StringBuilder str = new StringBuilder();</span>
+<span class="fc" id="L489">        str.append(&quot;{&quot;);</span>
+<span class="fc" id="L490">        str.append(&quot;\&quot;word1\&quot;: &quot;);</span>
+<span class="fc" id="L491">        str.append(&quot;\&quot;&quot;);</span>
+<span class="fc" id="L492">        str.append(word1);</span>
+<span class="fc" id="L493">        str.append(&quot;\&quot;&quot;);</span>
+<span class="fc" id="L494">        str.append(&quot;, &quot;);</span>
+<span class="fc" id="L495">        str.append(&quot;\&quot;word2\&quot;: &quot;);</span>
+<span class="fc" id="L496">        str.append(&quot;\&quot;&quot;);</span>
+<span class="fc" id="L497">        str.append(word2);</span>
+<span class="fc" id="L498">        str.append(&quot;\&quot;&quot;);</span>
+<span class="fc" id="L499">        str.append(&quot;, &quot;);</span>
+<span class="fc" id="L500">        str.append(&quot;\&quot;probability\&quot;: &quot;);</span>
+<span class="fc" id="L501">        str.append(&quot;\&quot;&quot;);</span>
+<span class="fc" id="L502">        str.append(probability);</span>
+<span class="fc" id="L503">        str.append(&quot;\&quot;&quot;);</span>
+<span class="fc" id="L504">        str.append(&quot;}&quot;);</span>
+<span class="fc" id="L505">        return new String(str);</span>
+    }
+
+    public String addHistory(String oldHistory, String newHistory) {
+        StringBuilder str;
+<span class="fc bfc" id="L510" title="All 2 branches covered.">        if (oldHistory.length() &gt; 2) {</span>
+            // Have record
+<span class="fc" id="L512">            str = new StringBuilder(oldHistory);</span>
+<span class="fc" id="L513">            str.replace(str.length()-1, str.length(), &quot;, &quot; + newHistory);</span>
+<span class="fc" id="L514">            str.append(&quot;]&quot;);</span>
+        } else {
+            // No record
+<span class="fc" id="L517">            str = new StringBuilder();</span>
+<span class="fc" id="L518">            str.append(&quot;[&quot;);</span>
+<span class="fc" id="L519">            str.append(newHistory);</span>
+<span class="fc" id="L520">            str.append(&quot;]&quot;);</span>
+        }
+<span class="fc" id="L522">        return new String(str);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

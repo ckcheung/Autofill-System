@@ -1,0 +1,613 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>Controller.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCoverage analysis of project &quot;Autofill&quot; (powered by JaCoCo from EclEmma)</a> &gt; <a href="index.source.html" class="el_package">Autofill</a> &gt; <span class="el_source">Controller.java</span></div><h1>Controller.java</h1><pre class="source lang-java linenums">package Autofill;
+
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.pdf.AcroFields;
+import com.itextpdf.text.pdf.PdfReader;
+import com.itextpdf.text.pdf.PdfStamper;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.json.JSONException;
+
+<span class="nc" id="L25">public class Controller extends HttpServlet {</span>
+    
+    // upload settings
+    private static final String DIRECTORY = &quot;form&quot;;
+    private static final int MEMORY_THRESHOLD   = 1024 * 1024 * 3;  // 3MB
+    private static final int MAX_FILE_SIZE      = 1024 * 1024 * 40; // 40MB
+    private static final int MAX_REQUEST_SIZE   = 1024 * 1024 * 50; // 50MB
+    private static final String DBURL = &quot;jdbc:mysql://127.0.0.1:3307/Autofill&quot;;
+    private static final String DBUsername = &quot;root&quot;;
+    private static final String DBPassword = &quot;admin&quot;;
+    //private static Connection con;
+    //private static PreparedStatement pstmt;
+    //private static ResultSet rs;
+
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+<span class="nc" id="L41">        response.setContentType(&quot;text/html;charset=UTF-8&quot;);</span>
+        
+        String addr;
+<span class="nc" id="L44">        HttpSession session = request.getSession(true);</span>
+        //ps -ef | grep mysql
+        
+        try {
+            //con = DriverManager.getConnection(DBURL, DBUsername, DBPassword);
+<span class="nc" id="L49">            String page = request.getParameter(&quot;page&quot;);</span>
+<span class="nc bnc" id="L50" title="All 2 branches missed.">            if (page == null) {</span>
+<span class="nc" id="L51">                addr = &quot;home.jsp&quot;;</span>
+            } else {
+<span class="nc bnc" id="L53" title="All 42 branches missed.">                switch (page) {</span>
+                    case &quot;register&quot;:
+<span class="nc bnc" id="L55" title="All 2 branches missed.">                        if (register(request)) {</span>
+<span class="nc" id="L56">                            addr = &quot;home.jsp&quot;;</span>
+                        } else {
+<span class="nc" id="L58">                            addr = &quot;register.jsp&quot;;</span>
+                        }
+<span class="nc" id="L60">                        break;</span>
+                    case &quot;login&quot;:
+<span class="nc bnc" id="L62" title="All 2 branches missed.">                        if (login(request)) {</span>
+<span class="nc" id="L63">                            addr = &quot;home.jsp&quot;;</span>
+                        } else {
+<span class="nc" id="L65">                            addr = &quot;home.jsp&quot;;</span>
+                        }
+<span class="nc" id="L67">                        break;</span>
+                    case &quot;logout&quot;:
+<span class="nc" id="L69">                        session.setAttribute(&quot;user&quot;, null);</span>
+<span class="nc" id="L70">                        addr = &quot;home.jsp&quot;;</span>
+<span class="nc" id="L71">                        break;</span>
+                    case &quot;record&quot;:
+<span class="nc" id="L73">                        addr = &quot;record.jsp&quot;;</span>
+<span class="nc" id="L74">                        break;</span>
+                    case &quot;save&quot;:
+<span class="nc" id="L76">                        String data = (String)session.getAttribute(&quot;data&quot;);</span>
+<span class="nc" id="L77">                        System.out.println(data);</span>
+<span class="nc" id="L78">                        addr = &quot;record.jsp&quot;;</span>
+<span class="nc" id="L79">                        break;</span>
+                    case &quot;fill&quot;:
+<span class="nc" id="L81">                        session.setAttribute(&quot;formList&quot;, createFormList());</span>
+<span class="nc" id="L82">                        addr = &quot;fill.jsp&quot;;</span>
+<span class="nc" id="L83">                        break;</span>
+                    case &quot;process&quot;:
+<span class="nc" id="L85">                        toProcessPage(request);</span>
+<span class="nc" id="L86">                        addr = &quot;process.jsp&quot;;</span>
+<span class="nc" id="L87">                        break;</span>
+                    case &quot;result&quot;:
+<span class="nc" id="L89">                        toResultPage(request);</span>
+<span class="nc" id="L90">                        addr = &quot;result.jsp&quot;;</span>
+<span class="nc" id="L91">                        break;</span>
+                    case &quot;manage&quot;:
+<span class="nc" id="L93">                        addr = &quot;manage.jsp&quot;;</span>
+<span class="nc" id="L94">                        break;</span>
+                    case &quot;statistics&quot;:
+<span class="nc" id="L96">                        session.setAttribute(&quot;statistics&quot;, Dictionary.getInstance().getHistory());</span>
+<span class="nc" id="L97">                        addr = &quot;statistics.jsp&quot;;</span>
+<span class="nc" id="L98">                        break;</span>
+                    default:
+<span class="nc" id="L100">                        addr = &quot;home.jsp&quot;;</span>
+                        break;
+                }            
+            }
+<span class="nc" id="L104">        } catch (Exception e) {</span>
+<span class="nc" id="L105">            addr = &quot;error.jsp&quot;;</span>
+<span class="nc" id="L106">        }</span>
+        
+<span class="nc" id="L108">        RequestDispatcher dispatcher = request.getRequestDispatcher(addr);</span>
+<span class="nc" id="L109">        dispatcher.forward(request, response); </span>
+        
+<span class="nc" id="L111">    }</span>
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+<span class="nc" id="L116">        processRequest(request, response);</span>
+<span class="nc" id="L117">    }</span>
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+<span class="nc" id="L122">        processRequest(request, response);</span>
+<span class="nc" id="L123">    }</span>
+
+    
+    // User registration
+    // Return true if success, otherwise return false
+    private boolean register(HttpServletRequest request) {
+        /*
+        if (request.getParameter(&quot;username&quot;) != null) {
+            pstmt = con.prepareStatement(
+                &quot;INSERT INTO User (username, password, role, data, fieldGroup) VALUES (?, ?, ?, ?, ?)&quot;
+            );
+            pstmt.setString(1, request.getParameter(&quot;username&quot;));
+            pstmt.setString(2, request.getParameter(&quot;password&quot;));
+            pstmt.setString(3, &quot;user&quot;);
+            pstmt.setString(4, &quot;[]&quot;);
+            pstmt.setString(5, &quot;[]&quot;);
+            pstmt.executeUpdate();
+            
+            return true;
+        } else {
+            return false;
+        }
+        */
+<span class="nc" id="L146">        Authentication authentication = Authentication.getInstance();</span>
+<span class="nc" id="L147">        String username = (String)request.getParameter(&quot;username&quot;);</span>
+<span class="nc" id="L148">        String password = (String)request.getParameter(&quot;password&quot;);</span>
+<span class="nc" id="L149">        boolean successful = authentication.register(username, password);</span>
+<span class="nc" id="L150">        return successful;</span>
+    }
+    
+    // User login
+    // Return true if success, otherwise return false
+    private boolean login(HttpServletRequest request) {
+        /*
+        if (request.getParameter(&quot;username&quot;) != null) {
+            pstmt = con.prepareStatement(
+                &quot;SELECT role, data, fieldGroup FROM User WHERE username = ? AND password = ?&quot;
+            );
+            pstmt.setString(1, request.getParameter(&quot;username&quot;));
+            pstmt.setString(2, request.getParameter(&quot;password&quot;));
+            rs = pstmt.executeQuery();
+
+            // If success login, store account information to the session object
+            if (rs.next()) {
+                User user = new User();
+                user.setUsername(request.getParameter(&quot;username&quot;));
+                user.setRole(rs.getString(&quot;role&quot;));
+                user.setData(rs.getString(&quot;data&quot;));
+                user.setGroup(rs.getString(&quot;fieldGroup&quot;));
+                request.getSession().setAttribute(&quot;user&quot;, user);
+            }
+            
+        }
+        
+        if (request.getSession().getAttribute(&quot;user&quot;) != null) {
+            return true;
+        } else {
+            return false;
+        }
+        */
+        
+<span class="nc" id="L184">        Authentication authentication = Authentication.getInstance();</span>
+<span class="nc" id="L185">        String username = (String)request.getParameter(&quot;username&quot;);</span>
+<span class="nc" id="L186">        String password = (String)request.getParameter(&quot;password&quot;);</span>
+<span class="nc" id="L187">        User user = authentication.authenticate(username, password);</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">        if (user != null) {</span>
+<span class="nc" id="L189">            request.getSession().setAttribute(&quot;user&quot;, user);</span>
+<span class="nc" id="L190">            return true;</span>
+        } else {
+<span class="nc" id="L192">            return false;</span>
+        }
+
+    }
+    
+    // Return the name of the uplaoded file if success, otherwise return false
+    private String fileUpload(HttpServletRequest request) throws IOException, FileUploadException, Exception {
+        // checks if the request actually contains upload file
+<span class="nc bnc" id="L200" title="All 2 branches missed.">        if (ServletFileUpload.isMultipartContent(request)) {</span>
+            // configures upload settings
+<span class="nc" id="L202">            DiskFileItemFactory factory = new DiskFileItemFactory();</span>
+            // sets memory threshold - beyond which files are stored in disk
+<span class="nc" id="L204">            factory.setSizeThreshold(MEMORY_THRESHOLD);</span>
+            // sets temporary location to store files
+<span class="nc" id="L206">            factory.setRepository(new File(System.getProperty(&quot;java.io.tmpdir&quot;)));</span>
+
+<span class="nc" id="L208">            ServletFileUpload upload = new ServletFileUpload(factory);</span>
+
+            // sets maximum size of upload file
+<span class="nc" id="L211">            upload.setFileSizeMax(MAX_FILE_SIZE);</span>
+
+            // sets maximum size of request (include file + form data)
+<span class="nc" id="L214">            upload.setSizeMax(MAX_REQUEST_SIZE);</span>
+
+            // creates the directory if it does not exist
+<span class="nc" id="L217">            File uploadDir = new File(getServletContext().getRealPath(DIRECTORY));</span>
+<span class="nc bnc" id="L218" title="All 2 branches missed.">            if (!uploadDir.exists()) {</span>
+<span class="nc" id="L219">                uploadDir.mkdir();</span>
+            }
+
+            // parses the request's content to extract file data
+            //@SuppressWarnings(&quot;unchecked&quot;)
+<span class="nc" id="L224">            List&lt;FileItem&gt; formItems = upload.parseRequest(request);</span>
+
+<span class="nc" id="L226">            String fileName = null;</span>
+<span class="nc" id="L227">            String filepath = null;</span>
+<span class="nc bnc" id="L228" title="All 4 branches missed.">            if (formItems != null &amp;&amp; formItems.size() &gt; 0) {</span>
+<span class="nc bnc" id="L229" title="All 2 branches missed.">                for (FileItem item : formItems) {</span>
+                    // processes only fields that are not form fields
+<span class="nc bnc" id="L231" title="All 2 branches missed.">                    if (!item.isFormField()) {</span>
+<span class="nc" id="L232">                        fileName = new File(item.getName()).getName();</span>
+<span class="nc" id="L233">                        filepath = getServletContext().getRealPath(DIRECTORY + File.separator + fileName);</span>
+<span class="nc" id="L234">                        File storeFile = new File(filepath);</span>
+<span class="nc" id="L235">                        item.write(storeFile);</span>
+                    }
+<span class="nc" id="L237">                }</span>
+            }
+
+<span class="nc" id="L240">            Connection con = null;</span>
+<span class="nc" id="L241">            PreparedStatement pstmt = null;</span>
+<span class="nc" id="L242">            ResultSet rs = null;</span>
+            try {
+<span class="nc" id="L244">                con = DriverManager.getConnection(DBURL, DBUsername, DBPassword);</span>
+                //Store file information to database
+<span class="nc" id="L246">                pstmt = con.prepareStatement(</span>
+                    &quot;INSERT INTO Form VALUES (?, ?)&quot;
+                );
+<span class="nc" id="L249">                pstmt.setString(1, fileName);</span>
+<span class="nc" id="L250">                pstmt.setString(2, fileName.substring(0, fileName.lastIndexOf('.')));</span>
+<span class="nc" id="L251">                pstmt.executeUpdate();</span>
+<span class="nc" id="L252">            } catch (Exception e) {</span>
+                } finally {
+<span class="nc" id="L254">                try {</span>
+<span class="nc bnc" id="L255" title="All 6 branches missed.">                    if (con != null) {con.close();}</span>
+<span class="nc bnc" id="L256" title="All 6 branches missed.">                    if (pstmt != null) {con.close();}</span>
+<span class="nc bnc" id="L257" title="All 6 branches missed.">                    if (rs != null) {con.close();}</span>
+<span class="nc" id="L258">                } catch (Exception e) {</span>
+
+<span class="nc" id="L260">                }</span>
+<span class="nc" id="L261">            }</span>
+
+<span class="nc" id="L263">            return fileName;</span>
+
+        }
+<span class="nc" id="L266">        return null;</span>
+    }
+    
+    private ArrayList&lt;PDFForm&gt; createFormList() {
+<span class="nc" id="L270">        ArrayList&lt;PDFForm&gt; formList = new ArrayList();</span>
+        
+<span class="nc" id="L272">        Connection con = null;</span>
+<span class="nc" id="L273">        PreparedStatement pstmt = null;</span>
+<span class="nc" id="L274">        ResultSet rs = null;</span>
+        
+        try {
+<span class="nc" id="L277">            con = DriverManager.getConnection(DBURL, DBUsername, DBPassword);</span>
+<span class="nc" id="L278">            pstmt = con.prepareStatement(</span>
+                &quot;SELECT * FROM Form ORDER BY name&quot;
+            );
+<span class="nc" id="L281">            rs = pstmt.executeQuery();</span>
+<span class="nc bnc" id="L282" title="All 2 branches missed.">            while (rs.next()) {</span>
+<span class="nc" id="L283">                PDFForm form = new PDFForm();</span>
+<span class="nc" id="L284">                form.setName(rs.getString(&quot;name&quot;));</span>
+<span class="nc" id="L285">                form.setDescription(rs.getString(&quot;description&quot;));</span>
+<span class="nc" id="L286">                formList.add(form);</span>
+<span class="nc" id="L287">            }</span>
+<span class="nc" id="L288">        } catch (Exception e) {</span>
+            
+        } finally {
+<span class="nc" id="L291">            try {</span>
+<span class="nc bnc" id="L292" title="All 6 branches missed.">                if (con != null) {con.close();}</span>
+<span class="nc bnc" id="L293" title="All 6 branches missed.">                if (pstmt != null) {con.close();}</span>
+<span class="nc bnc" id="L294" title="All 6 branches missed.">                if (rs != null) {con.close();}</span>
+<span class="nc" id="L295">            } catch (Exception e) {</span>
+                
+<span class="nc" id="L297">            }</span>
+<span class="nc" id="L298">        }</span>
+        
+<span class="nc" id="L300">        return formList;</span>
+    }
+    
+    private void toProcessPage(HttpServletRequest request) throws IOException, FileUploadException, DocumentException, JSONException, Exception {
+<span class="nc" id="L304">        String filepath = request.getParameter(&quot;formPath&quot;);</span>
+<span class="nc" id="L305">        System.out.println(filepath);</span>
+<span class="nc bnc" id="L306" title="All 2 branches missed.">        if (filepath == null) {</span>
+<span class="nc" id="L307">            filepath = fileUpload(request);</span>
+        } 
+<span class="nc" id="L309">        User user = ((User)request.getSession().getAttribute(&quot;user&quot;));</span>
+<span class="nc" id="L310">        FormFiller filler = new FormFiller(getServletContext().getRealPath(DIRECTORY + File.separator + filepath));</span>
+        /*
+        ArrayList&lt;AcroFormField&gt; fields = filler.fillPdf(
+            getServletContext().getRealPath(DIRECTORY + File.separator + &quot;temp.pdf&quot;), 
+            user.getData(),
+            con,
+            pstmt,
+            rs
+        );
+        */
+<span class="nc" id="L320">        ArrayList&lt;AcroFormField&gt; fields = filler.fillPdf(</span>
+<span class="nc" id="L321">            getServletContext().getRealPath(DIRECTORY + File.separator + &quot;temp.pdf&quot;), </span>
+<span class="nc" id="L322">            user.getData()</span>
+        );
+<span class="nc" id="L324">        request.getSession().setAttribute(&quot;fields&quot;, fields);</span>
+
+<span class="nc" id="L326">    }</span>
+    
+    private void toResultPage(HttpServletRequest request) throws IOException, DocumentException {
+<span class="nc" id="L329">        Dictionary dictionary = Dictionary.getInstance();</span>
+<span class="nc" id="L330">        HttpSession session = request.getSession();</span>
+<span class="nc" id="L331">        ArrayList&lt;AcroFormField&gt; fields = (ArrayList&lt;AcroFormField&gt;)session.getAttribute(&quot;fields&quot;);</span>
+
+<span class="nc" id="L333">        PdfReader reader = new PdfReader(getServletContext().getRealPath(DIRECTORY + File.separator + &quot;temp.pdf&quot;)); </span>
+<span class="nc" id="L334">        PdfStamper stamper = new PdfStamper(reader, new FileOutputStream(getServletContext().getRealPath(DIRECTORY + File.separator + &quot;result.pdf&quot;)));</span>
+<span class="nc" id="L335">        AcroFields form = stamper.getAcroFields();</span>
+
+<span class="nc bnc" id="L337" title="All 2 branches missed.">        for (AcroFormField field : fields) {</span>
+<span class="nc bnc" id="L338" title="All 4 branches missed.">            if (field.getFieldLabel() != null &amp;&amp; field.getFieldLabel().length() != 0) {</span>
+<span class="nc bnc" id="L339" title="All 2 branches missed.">                if (!request.getParameter(field.getFieldName() + &quot;_option&quot;).equals(&quot;&quot;)) {</span>
+<span class="nc bnc" id="L340" title="All 2 branches missed.">                    if (form.getField(field.getFieldName()).equals(&quot;&quot;)) {</span>
+                        // Add synonym to dictionary
+                        /*
+                        String personalFieldName = request.getParameter(field.getFieldName() + &quot;_personalFieldName&quot;);
+                        pstmt = con.prepareStatement(
+                            &quot;INSERT INTO Dictionary VALUES (?, ?, ?, ?)&quot;
+                        );
+                        pstmt.setString(1, personalFieldName);
+                        pstmt.setString(2, field.getFieldName().toLowerCase());
+                        pstmt.setFloat(3, 0.5f);
+                        pstmt.setString(4, &quot;[{\&quot;word1\&quot;: \&quot;&quot; + personalFieldName + &quot;\&quot;, \&quot;word2\&quot;: \&quot;&quot; + field.getFieldName().toLowerCase() + &quot;\&quot;, \&quot;probability\&quot;: \&quot;0.5\&quot;&quot;);
+                        pstmt.executeUpdate();
+                        */
+<span class="nc" id="L353">                        String personalFieldName = request.getParameter(field.getFieldName() + &quot;_personalFieldName&quot;);</span>
+<span class="nc" id="L354">                        dictionary.addSynonym(personalFieldName, field.getFieldName().toLowerCase());</span>
+<span class="nc bnc" id="L355" title="All 2 branches missed.">                    } else if (!form.getField(field.getFieldName()).equals(request.getParameter(field.getFieldName()))) {</span>
+                        // Reduce synonym's probability in dictionary
+                        /*
+                        pstmt = con.prepareStatement(
+                            &quot;SELECT probability, history FROM Dictionary WHERE standard = ? AND synonym = ?&quot;
+                        );
+                        pstmt.setString(1, field.getPersonalFieldName());
+                        pstmt.setString(2, field.getFieldName().toLowerCase());
+                        System.out.println(&quot;TEST &quot; + pstmt);
+                        rs = pstmt.executeQuery();
+                        if (rs.next()) {
+                            Float probability = rs.getFloat(&quot;probability&quot;);
+                            String history = rs.getString(&quot;history&quot;);
+                            probability = probability - 0.1f;
+                            if (probability &lt; 0) {
+                                // Remove entry
+                                pstmt = con.prepareStatement(
+                                    &quot;DELETE FROM Dictionary WHERE standard = ? AND synonym = ?&quot;
+                                );
+                                pstmt.setString(1, field.getPersonalFieldName());
+                                pstmt.setString(2, field.getFieldName().toLowerCase());
+                                pstmt.executeUpdate();
+                            } else {
+                                // Update probability
+                                String newHistory = addHistory(history, formatHistoryRecord(field.getPersonalFieldName(), field.getFieldName().toLowerCase(), probability));
+                                pstmt = con.prepareStatement(
+                                    &quot;UPDATE Dictionary SET probability = ?, history = ? WHERE standard = ? AND synonym = ?&quot;
+                                );
+                                pstmt.setFloat(1, probability);
+                                pstmt.setString(2, newHistory);
+                                pstmt.setString(3, field.getPersonalFieldName());
+                                pstmt.setString(4, field.getFieldName().toLowerCase());
+                                pstmt.executeUpdate();                                        
+                                //System.out.println(&quot;History : &quot; + addHistory(history, formatHistoryRecord(field.getPersonalFieldName(), field.getFieldName().toLowerCase(), probability)));
+                            }
+                            System.out.println(&quot;TEST2 &quot; + pstmt);
+                        } else {
+                            // Synonym to synonym matching
+                            String personalFieldName = request.getParameter(field.getFieldName() + &quot;_personalFieldName&quot;);
+                            pstmt = con.prepareStatement(
+                                &quot;SELECT D1.standard As standard, D1.probability As probability, D1.history As history FROM Dictionary D1, Dictionary D2 WHERE D1.standard = D2.standard AND D1.synonym = ? AND D2.synonym = ?&quot;
+                            );
+                            pstmt.setString(1, field.getFieldName().toLowerCase());
+                            pstmt.setString(2, field.getPersonalFieldName());
+                            System.out.println(&quot;TEST7 - &quot; + pstmt);
+                            rs = pstmt.executeQuery();
+                            String standard;
+                            String history;
+                            Float probability;
+                            if (rs.next()) {
+                                standard = rs.getString(&quot;standard&quot;);
+                                history = rs.getString(&quot;history&quot;);
+                                probability = rs.getFloat(&quot;probability&quot;);
+                                probability = (float)Math.round((probability - 0.1f)*10)/10;
+                            } else {
+                                continue;
+                            }
+
+                            if (probability == 0) {
+                                //remove
+                            } else {
+                                String newHistory = addHistory(history, formatHistoryRecord(field.getPersonalFieldName(), field.getFieldName().toLowerCase(), probability));
+                                pstmt = con.prepareStatement(
+                                    &quot;UPDATE Dictionary SET probability = ROUND(LEAST(1, probability - 0.1), 1), history = ? WHERE standard = ? AND (synonym = ? OR synonym = ?)&quot;
+                                ); 
+                                pstmt.setString(1, newHistory);
+                                pstmt.setString(2, standard);
+                                pstmt.setString(3, field.getFieldName().toLowerCase());
+                                pstmt.setString(4, field.getPersonalFieldName());
+                                System.out.println(&quot;TEST6 - &quot; + pstmt);
+                                pstmt.executeUpdate();
+                                //System.out.println(&quot;History : &quot; + addHistory(history, formatHistoryRecord(field.getPersonalFieldName(), field.getFieldName().toLowerCase(), probability)));
+                            }
+                        }
+                        */
+<span class="nc" id="L430">                        dictionary.reduceProbability(field.getPersonalFieldName(), field.getFieldName().toLowerCase());</span>
+                    }
+
+<span class="nc bnc" id="L433" title="All 2 branches missed.">                    if (!form.getField(field.getFieldName()).equals(request.getParameter(field.getFieldName()))) {</span>
+                        // Refill that field if it is changed by user
+<span class="nc" id="L435">                        form.setField(</span>
+<span class="nc" id="L436">                            field.getFieldName(), </span>
+<span class="nc" id="L437">                            request.getParameter(field.getFieldName())</span>
+                        );
+                    }
+                }
+
+                // Matching correct or user perform matching
+<span class="nc bnc" id="L443" title="All 4 branches missed.">                if ((request.getParameter(field.getFieldName() + &quot;_option&quot;).equals(&quot;&quot;) &amp;&amp; !request.getParameter(field.getFieldName()).equals(&quot;&quot;)) ||</span>
+<span class="nc bnc" id="L444" title="All 6 branches missed.">                    (!request.getParameter(field.getFieldName() + &quot;_option&quot;).equals(&quot;&quot;) &amp;&amp; !form.getField(field.getFieldName()).equals(&quot;&quot;) &amp;&amp; !form.getField(field.getFieldName()).equals(request.getParameter(field.getFieldName())))) {</span>
+                    // Increase probability
+<span class="nc" id="L446">                    String personalFieldName = request.getParameter(field.getFieldName() + &quot;_personalFieldName&quot;);</span>
+                    
+                    /*
+                    // Standard to synonym matching
+                    pstmt = con.prepareStatement(
+                        &quot;SELECT probability, history FROM Dictionary WHERE standard = ? AND synonym = ?&quot;
+                    );                      
+                    pstmt.setString(1, personalFieldName);
+                    pstmt.setString(2, field.getFieldName().toLowerCase());
+                    System.out.println(&quot;TEST3 - &quot; + pstmt);
+                    rs = pstmt.executeQuery();
+                    if (rs.next()) {
+                        float probability = rs.getFloat(&quot;probability&quot;);
+                        String history = rs.getString(&quot;history&quot;);
+                        probability = Math.min(1, Math.round((probability + 0.1f)*10)/10);
+                        String newHistory = addHistory(history, formatHistoryRecord(personalFieldName, field.getFieldName().toLowerCase(), probability));
+                        pstmt = con.prepareStatement(
+                            &quot;UPDATE Dictionary SET probability = ?, history = ? WHERE standard = ? AND synonym = ?&quot;    
+                        );
+                        pstmt.setFloat(1, probability);
+                        pstmt.setString(2, newHistory);
+                        pstmt.setString(3, personalFieldName);
+                        pstmt.setString(4, field.getFieldName().toLowerCase());
+                        pstmt.executeUpdate();
+                        //System.out.println(&quot;History : &quot; + addHistory(history, formatHistoryRecord(personalFieldName, field.getFieldName().toLowerCase(), probability)));
+                        continue;
+                    }
+                        
+                    // Synonym to standard matching
+                    pstmt = con.prepareStatement(
+                        &quot;SELECT probability, history FROM Dictionary WHERE standard = ? AND synonym = ?&quot;
+                    ); 
+                    pstmt.setString(1, field.getFieldName().toLowerCase());
+                    pstmt.setString(2, personalFieldName);
+                    System.out.println(&quot;TEST4 - &quot; + pstmt);
+                    rs = pstmt.executeQuery();
+                    if (rs.next()) {
+                        System.out.println(&quot;TEST4&quot;);
+                        float probability = rs.getFloat(&quot;probability&quot;);
+                        String history = rs.getString(&quot;history&quot;);
+                        probability = Math.min(1, Math.round((probability + 0.1f)*10)/10);
+                        String newHistory = addHistory(history, formatHistoryRecord(field.getPersonalFieldName(), field.getFieldName().toLowerCase(), probability));
+                        pstmt = con.prepareStatement(
+                            &quot;UPDATE Dictionary SET probability = ? WHERE standard = ? AND synonym = ?&quot;    
+                        );
+                        pstmt.setFloat(1, probability);
+                        pstmt.setString(2, addHistory(history, newHistory));
+                        pstmt.setString(3, field.getFieldName().toLowerCase());
+                        pstmt.setString(4, personalFieldName);
+                        pstmt.executeUpdate();
+                        //System.out.println(&quot;History : &quot; + addHistory(history, formatHistoryRecord(field.getPersonalFieldName(), field.getFieldName().toLowerCase(), probability)));
+                        continue;
+                    }
+                    
+                    // Synonym to synonym matching
+                    pstmt = con.prepareStatement(
+                        &quot;SELECT D1.standard As standard, D1.probability As probability, D1.history As history FROM Dictionary D1, Dictionary D2 WHERE D1.standard = D2.standard AND D1.synonym = ? AND D2.synonym = ?&quot;
+                    );
+                    pstmt.setString(1, field.getFieldName().toLowerCase());
+                    pstmt.setString(2, personalFieldName);
+                    rs = pstmt.executeQuery();
+                    String standard;
+                    String history;
+                    Float probability;
+                    if (rs.next()) {
+                        standard = rs.getString(&quot;standard&quot;);
+                        history = rs.getString(&quot;history&quot;);
+                        probability = rs.getFloat(&quot;probability&quot;);
+                        probability = Math.min(1, probability + 0.1f);
+                    } else {
+                        continue;
+                    }String newHistory = addHistory(history, formatHistoryRecord(personalFieldName, field.getFieldName().toLowerCase(), probability));
+                    pstmt = con.prepareStatement(
+                        &quot;UPDATE Dictionary SET probability = ROUND(LEAST(1, probability + 0.1), 1), history = ? WHERE standard = ? AND (synonym = ? OR synonym = ?)&quot;
+                    ); 
+                    pstmt.setString(1, newHistory);
+                    pstmt.setString(2, standard);
+                    pstmt.setString(3, field.getFieldName().toLowerCase());
+                    pstmt.setString(4, personalFieldName);
+                    System.out.println(&quot;TEST5 - &quot; + pstmt);
+                    //System.out.println(&quot;History : &quot; + addHistory(history, formatHistoryRecord(personalFieldName, field.getFieldName().toLowerCase(), probability)));
+                    pstmt.executeUpdate();
+                    
+                    */
+<span class="nc" id="L530">                    dictionary.addProbability(personalFieldName, field.getFieldName().toLowerCase());</span>
+                }
+            }
+<span class="nc" id="L533">        }</span>
+<span class="nc" id="L534">        stamper.close();</span>
+<span class="nc" id="L535">        reader.close();</span>
+
+<span class="nc" id="L537">    }</span>
+    
+    /*
+    private void getHistory(HttpServletRequest request) throws SQLException {
+        ArrayList&lt;Statistics&gt; statistics = new ArrayList&lt;&gt;();
+        pstmt = con.prepareStatement(
+            &quot;SELECT standard, synonym, history FROM Dictionary ORDER BY standard&quot;
+        );
+        rs = pstmt.executeQuery();
+        StringBuilder str = new StringBuilder();
+        while (rs.next()) {
+            Statistics s = new Statistics();
+            s.setStandard(rs.getString(&quot;standard&quot;));
+            s.setSynonym(rs.getString(&quot;synonym&quot;));
+            if (rs.getString(&quot;history&quot;) != null) {
+                s.setHistory(rs.getString(&quot;history&quot;));
+            } else {
+                s.setHistory(&quot;[]&quot;);
+            }
+            statistics.add(s);
+        }
+        
+        request.getSession().setAttribute(&quot;statistics&quot;, statistics);
+    }
+    */
+    
+    /*
+    private String formatHistoryRecord(float probability) {
+        StringBuilder str = new StringBuilder();
+        str.append(&quot;{\&quot;probability\&quot;: \&quot;&quot;);
+        str.append(probability);
+        str.append(&quot;\&quot;}&quot;);
+        return new String(str);
+    }
+    */
+    
+    /*
+    private String formatHistoryRecord(String word1, String word2, float probability) {
+        StringBuilder str = new StringBuilder();
+        str.append(&quot;{&quot;);
+        str.append(&quot;\&quot;word1\&quot;: &quot;);
+        str.append(&quot;\&quot;&quot;);
+        str.append(word1);
+        str.append(&quot;\&quot;&quot;);
+        str.append(&quot;, &quot;);
+        str.append(&quot;\&quot;word2\&quot;: &quot;);
+        str.append(&quot;\&quot;&quot;);
+        str.append(word2);
+        str.append(&quot;\&quot;&quot;);
+        str.append(&quot;, &quot;);
+        str.append(&quot;\&quot;probability\&quot;: &quot;);
+        str.append(&quot;\&quot;&quot;);
+        str.append(probability);
+        str.append(&quot;\&quot;&quot;);
+        str.append(&quot;}&quot;);
+        return new String(str);
+    }
+        
+    private String addHistory(String oldHistory, String newHistory) {
+        StringBuilder str;
+        if (oldHistory.length() &gt; 2) {
+            // Have record
+            str = new StringBuilder(oldHistory);
+            str.replace(str.length()-1, str.length(), &quot;, &quot; + newHistory);
+            str.append(&quot;]&quot;);
+        } else {
+            // No record
+            str = new StringBuilder();
+            str.append(&quot;[&quot;);
+            str.append(newHistory);
+            str.append(&quot;]&quot;);
+        }
+        return new String(str);
+    }
+    */
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>
