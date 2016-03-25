@@ -8,9 +8,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-public class AcroFormFieldTest {
+public class FormObjectTest {
     
-    public AcroFormFieldTest() {
+    public FormObjectTest() {
     }
     
     @BeforeClass
@@ -32,9 +32,9 @@ public class AcroFormFieldTest {
     // Larger page number
     @Test
     public void testCompareTo1() {
-        AcroFormField field1 = new AcroFormField();
+        FormObject field1 = new AcroFormField();
         field1.setPage(2);
-        AcroFormField field2 = new AcroFormField();
+        FormObject field2 = new AcroFormField();
         field2.setPage(1);
         int result = field1.compareTo(field2);
         assertEquals(1, result);
@@ -43,9 +43,9 @@ public class AcroFormFieldTest {
     // smaller page number
     @Test
     public void testCompareTo2() {
-        AcroFormField field1 = new AcroFormField();
+        FormObject field1 = new AcroFormField();
         field1.setPage(1);
-        AcroFormField field2 = new AcroFormField();
+        FormObject field2 = new AcroFormField();
         field2.setPage(2);
         int result = field1.compareTo(field2);
         assertEquals(-1, result);
@@ -55,10 +55,10 @@ public class AcroFormFieldTest {
     // T,T,T in first condition checking of line comparsion
     @Test
     public void testCompareTo3() {
-        AcroFormField field1 = new AcroFormField();
+        FormObject field1 = new AcroFormField();
         field1.setPage(1);
         field1.setPosition(new Rectangle(10, 10, 20, 20));
-        AcroFormField field2 = new AcroFormField();
+        FormObject field2 = new AcroFormField();
         field2.setPage(1);
         field2.setPosition(new Rectangle(30, 30, 40, 40));
         int result = field1.compareTo(field2);
@@ -71,10 +71,10 @@ public class AcroFormFieldTest {
     // In the right hand side of another field
     @Test
     public void testCompareTo4() {
-        AcroFormField field1 = new AcroFormField();
+        FormObject field1 = new AcroFormField();
         field1.setPage(1);
         field1.setPosition(new Rectangle(25, 10, 35, 20));
-        AcroFormField field2 = new AcroFormField();
+        FormObject field2 = new AcroFormField();
         field2.setPage(1);
         field2.setPosition(new Rectangle(10, 15, 20, 25));
         int result = field1.compareTo(field2);
@@ -87,10 +87,10 @@ public class AcroFormFieldTest {
     // In the left hand side of another field
     @Test
     public void testCompareTo5() {
-        AcroFormField field1 = new AcroFormField();
+        FormObject field1 = new AcroFormField();
         field1.setPage(1);
         field1.setPosition(new Rectangle(10, 10, 20, 20));
-        AcroFormField field2 = new AcroFormField();
+        FormObject field2 = new AcroFormField();
         field2.setPage(1);
         field2.setPosition(new Rectangle(30, 10, 40, 21));
         int result = field1.compareTo(field2);
@@ -102,10 +102,10 @@ public class AcroFormFieldTest {
     // T,T,F in second condition checking of line comparsion
     @Test
     public void testCompareTo6() {
-        AcroFormField field1 = new AcroFormField();
+        FormObject field1 = new AcroFormField();
         field1.setPage(1);
         field1.setPosition(new Rectangle(10, 11, 20, 21));
-        AcroFormField field2 = new AcroFormField();
+        FormObject field2 = new AcroFormField();
         field2.setPage(1);
         field2.setPosition(new Rectangle(10, 10, 20, 20));
         int result = field1.compareTo(field2);
@@ -117,10 +117,10 @@ public class AcroFormFieldTest {
     // T,F,X in second condition checking of line comparsion
     @Test
     public void testCompareTo7() {
-        AcroFormField field1 = new AcroFormField();
+        FormObject field1 = new AcroFormField();
         field1.setPage(1);
         field1.setPosition(new Rectangle(10, 10, 20, 21));
-        AcroFormField field2 = new AcroFormField();
+        FormObject field2 = new AcroFormField();
         field2.setPage(1);
         field2.setPosition(new Rectangle(10, 10, 20, 20));
         int result = field1.compareTo(field2);
@@ -132,10 +132,10 @@ public class AcroFormFieldTest {
     // F,F,X in second condition checking of line comparsion
     @Test
     public void testCompareTo8() {
-        AcroFormField field1 = new AcroFormField();
+        FormObject field1 = new AcroFormField();
         field1.setPage(1);
         field1.setPosition(new Rectangle(10, 10, 20, 20));
-        AcroFormField field2 = new AcroFormField();
+        FormObject field2 = new AcroFormField();
         field2.setPage(1);
         field2.setPosition(new Rectangle(10, 10, 20, 20));
         int result = field1.compareTo(field2);
@@ -147,10 +147,10 @@ public class AcroFormFieldTest {
     // T,T,T in second condition checking of line comparsion
     @Test
     public void testCompareTo9() {
-        AcroFormField field1 = new AcroFormField();
+        FormObject field1 = new AcroFormField();
         field1.setPage(1);
         field1.setPosition(new Rectangle(10, 30, 20, 40));
-        AcroFormField field2 = new AcroFormField();
+        FormObject field2 = new AcroFormField();
         field2.setPage(1);
         field2.setPosition(new Rectangle(10, 10, 20, 20));
         int result = field1.compareTo(field2);

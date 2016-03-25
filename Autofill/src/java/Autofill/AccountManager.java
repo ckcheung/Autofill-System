@@ -79,7 +79,7 @@ public class AccountManager {
                 );
                 pstmt.setString(1, username);
                 pstmt.setString(2, password);
-                pstmt.setString(3, "user");
+                pstmt.setString(3, "member");
                 pstmt.setString(4, "[]");
                 pstmt.setString(5, "[]");
                 pstmt.executeUpdate();

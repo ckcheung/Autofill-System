@@ -41,7 +41,7 @@ public class FormManager {
             pstmt.executeUpdate();
             successful = true;
         } catch (SQLException e) {
-            throw e;
+            //throw e;
         } finally {
             try {
                 if (rs != null) {rs.close();}
@@ -67,7 +67,7 @@ public class FormManager {
             pstmt.setString(1, fileName);
             pstmt.setString(2, fileName.substring(0, fileName.lastIndexOf('.')));
             pstmt.executeUpdate();
-        } catch (SQLException e) {
+        } catch (Exception e) {
             return false;
         } finally {
             try {

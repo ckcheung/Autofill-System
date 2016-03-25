@@ -282,7 +282,7 @@ deleteRecord = function() {
 // Cancel edit mode of a row
 cancelEdit = function() {
 	while (currentRow.lastChild.firstChild) {
-            currentRow.lastChild.removeChild(currentRow.lastChild.firstChild);
+        currentRow.lastChild.removeChild(currentRow.lastChild.firstChild);
 	}	
 	currentRow.childNodes[0].innerHTML = originDataType;
 	currentRow.childNodes[1].innerHTML = originFieldName;
@@ -426,6 +426,7 @@ deleteGroupRecord = function() {
 	// If some records belong to this group, reject the action
 	for (var j=0; j<data.length; j++) {
 		if (data[j].group == group[i].name) {
+			alert("Group cannot be delete because it is in used by some fields.");
 			return;
 		}
 	}
@@ -489,6 +490,14 @@ updateGroupRecord = function(event) {
 // Insert new group data record
 insertGroup = function() {
 	var name = document.getElementById('groupName').value;
+
+	// Check if duplicate
+	for (var i=0; i<group.length; i++) {
+		if (group[i].name == name) {
+			alert("Action Abort: Duplicate Group Name!");
+			return;
+		}
+	}
 
 	var groupRecord = {"name" : name};
 	group.push(groupRecord);

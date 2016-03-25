@@ -50,6 +50,7 @@
                         <table>
                             <tr>
                                 <th>Form Name</th>
+                                <th>Description</th>
                                 <th>Action</th>
                             </tr>
                             <%
@@ -60,6 +61,9 @@
                                 <tr>
                                     <td>
                                         <%=form.getName()%>
+                                    </td>
+                                    <td>
+                                        <%=form.getDescription()%>
                                     </td>
                                     <td>
                                             <input type='hidden' name='formName' value='<%=form.getName()%>' />

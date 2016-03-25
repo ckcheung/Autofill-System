@@ -6,7 +6,7 @@
         <title>FYP</title>
         <script>
             // Decode JSON
-            var data = JSON.parse('${user.data}');
+            var data = JSON.parse('${user.data}')
             var group = JSON.parse('${user.group}');
         </script>
         <script src='js/record.js'></script>
@@ -23,6 +23,7 @@
                     <ul>
                         <li><a href='#groupBox'>Group</a></li>
                         <li><a href='#dataBox'>Data</a></li>
+                        <li><a href='#importBox'>Import</a></li>
                     </ul>
                     <div id='groupBox'>
                         <table id='groupTable'>
@@ -66,6 +67,19 @@
                         </table>
                         <br/>
                         <button onclick='saveData()'>Save Changes</button>
+                    </div>
+                    <div id='importBox'>
+                        <table>
+                            <tr>
+                                <th>Import From PDF:</th>
+                                <td>
+                                    <form method='POST' action='?page=import' enctype="multipart/form-data">
+                                        <input type='file' name='uploadFile' />
+                                        <input type='submit' value='Import' />
+                                    </form>
+                                </td>
+                            </tr>
+                        </table>
                     </div>
                 </div>
             </div>

@@ -16,7 +16,7 @@
             <div class='container'>
                 <table>
                     <tr>
-                        <td>Form:</td>
+                        <th>Form:</th>
                         <td>
                             <select id='formList' onchange='formListChanged()'>
                                 <%

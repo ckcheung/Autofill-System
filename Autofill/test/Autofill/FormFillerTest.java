@@ -32,9 +32,7 @@ public class FormFillerTest {
     public void tearDown() {
     }
 
-    /**
-     * Test of fillPdf method, of class FormFiller.
-     */
+
     //@Test
     public void testFillPdf() throws Exception {
         System.out.println("fillPdf");
@@ -44,8 +42,6 @@ public class FormFillerTest {
         ArrayList<AcroFormField> expResult = null;
         ArrayList<AcroFormField> result = instance.fillPdf(dest, data);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
     
     // A > B1 > C1 > D1
@@ -99,6 +95,7 @@ public class FormFillerTest {
         assertEquals(false, isGroupMatch);
     }
     
+    /*
     // Is on the right head side of another field
     @Test
     public void testIsOnRightTrue() throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
@@ -122,7 +119,7 @@ public class FormFillerTest {
         boolean isOnRight = (boolean)method.invoke(formfiller, rectangleLeft, rectangleRight);
         assertEquals(false, isOnRight);
     }
-    
+    */
     // Is on the same line
     @Test
     public void testIsOnSameLineTrue() throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
@@ -146,7 +143,7 @@ public class FormFillerTest {
         boolean isOnSameLine = (boolean)method.invoke(formfiller, rectangle1, rectangle2);
         assertEquals(false, isOnSameLine);
     }
-    
+    /*
     // Is separated
     @Test
     public void testIsSeperatedTrue() throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
@@ -219,4 +216,27 @@ public class FormFillerTest {
         boolean isSameLinePreviousField = (boolean)method.invoke(formfiller, rectangle1, rectangle2);
         assertEquals(false, isSameLinePreviousField);
     }    
+    */
+    
+    // Decode group name with numbering
+    @Test
+    public void testDecodeGroupName1() throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        FormFiller formfiller = new FormFiller("");
+        Method method = FormFiller.class.getDeclaredMethod("decodeGroupName", String.class);
+        method.setAccessible(true);
+        String resultGroupName = (String)method.invoke(formfiller, "Group Name 1");
+        String expectedGroupName = "Group Name";
+        assertEquals(expectedGroupName, resultGroupName);
+    }   
+    
+    // Decode group name without numbering (exception thrown)
+    @Test
+    public void testDecodeGroupName2() throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        FormFiller formfiller = new FormFiller("");
+        Method method = FormFiller.class.getDeclaredMethod("decodeGroupName", String.class);
+        method.setAccessible(true);
+        String resultGroupName = (String)method.invoke(formfiller, "Group Name");
+        String expectedGroupName = "Group Name";
+        assertEquals(expectedGroupName, resultGroupName);
+    }  
 }

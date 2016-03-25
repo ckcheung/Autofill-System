@@ -10,7 +10,7 @@
         <%@include file="header.jsp" %>
         <div id='main'>
             <div class='container'>
-                
+                <iframe src='<%=(String)session.getAttribute("filepath")%>' width='800px' height='600px' >
             </div>
         </div>
     </body>

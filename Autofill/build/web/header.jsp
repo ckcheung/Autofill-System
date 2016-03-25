@@ -38,11 +38,12 @@
             <%
                 User user = (User)session.getAttribute("user");
                 if (user != null) {
+                    if (user.getRole().equals("member")) {
             %>
             <a href='?page=record'>Records</a>
             <a href='?page=fill'>Autofill</a>
-            <a href=''>Setting</a>
             <%
+                    }
                     if (user.getRole().equals("admin")) {
             %>
             <a href='?page=manage'>Manage</a>

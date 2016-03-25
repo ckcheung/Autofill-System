@@ -3,13 +3,20 @@ package Autofill;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.AcroFields;
+import com.itextpdf.text.pdf.PdfDictionary;
+import com.itextpdf.text.pdf.PdfFormField;
+import com.itextpdf.text.pdf.PdfName;
 import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfStamper;
+import com.itextpdf.text.pdf.TextField;
+import com.itextpdf.text.pdf.parser.ContentByteUtils;
 import com.itextpdf.text.pdf.parser.FilteredTextRenderListener;
 import com.itextpdf.text.pdf.parser.LocationTextExtractionStrategy;
+import com.itextpdf.text.pdf.parser.PdfContentStreamProcessor;
 import com.itextpdf.text.pdf.parser.PdfTextExtractor;
 import com.itextpdf.text.pdf.parser.RegionTextRenderFilter;
 import com.itextpdf.text.pdf.parser.RenderFilter;
+import com.itextpdf.text.pdf.parser.RenderListener;
 import com.itextpdf.text.pdf.parser.TextExtractionStrategy;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -17,7 +24,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,16 +44,78 @@ public class FormFiller {
     public ArrayList<AcroFormField> fillPdf(String dest, String data) throws IOException, DocumentException, JSONException, SQLException {
         Dictionary dictionary = Dictionary.getInstance();
         PdfReader reader = new PdfReader(sourceFilePath); 
-        PdfStamper stamper = new PdfStamper(reader, new FileOutputStream(dest));
-        AcroFields form = stamper.getAcroFields();        
+        //PdfStamper stamper = new PdfStamper(reader, new FileOutputStream(dest));
+        PdfStamper stamper = null;
+        AcroFields form = reader.getAcroFields();
+        
+        // Add AcroFields if no any AcroField in the form
+        if (form.getFields().isEmpty()) {
+            String tempPlace = dest.replace(".", "_converted.");
+            stamper = new PdfStamper(reader, new FileOutputStream(tempPlace));
+            convertPDF(reader, stamper);
+            stamper.close();
+            reader.close();
+            reader = new PdfReader(tempPlace); 
+        }
+        stamper = new PdfStamper(reader, new FileOutputStream(dest));
+        form = stamper.getAcroFields();
+
         ArrayList<String> fields = new ArrayList<>(form.getFields().keySet());
         Collections.sort(fields);
         
-        AcroFormField temp;
+        //AcroFormField temp;
         
         HashMap objectMap = new HashMap();
         HashMap fieldMap = new HashMap();
         
+        StructureAnalyser structureAnalyser = StructureAnalyser.getInstance();
+        fieldList = structureAnalyser.analyse(reader);
+
+        for (AcroFormField field : fieldList) {
+            String key = field.getFieldName();
+            objectMap.put(key, field);
+            ArrayList<String> tempKeys;
+            
+            // Add field name to map
+            if (fieldMap.get(key.toLowerCase()) != null) {
+                tempKeys = (ArrayList<String>)fieldMap.get(key.toLowerCase());
+                tempKeys.add(key);
+            } else {
+                tempKeys = new ArrayList<>();
+                tempKeys.add(key);
+                fieldMap.put(key.toLowerCase(), tempKeys);
+            }
+
+            // Add same prefix words to map
+            ArrayList<String> samePrefixWords = dictionary.getSamePrefixWords(key);
+            for (String samePrefixWord: samePrefixWords) {
+                if (fieldMap.get(samePrefixWord) != null) {
+                    tempKeys = (ArrayList<String>)fieldMap.get(samePrefixWord);
+                    tempKeys.add(key);
+                } else {
+                    tempKeys = new ArrayList<>();
+                    tempKeys.add(key);
+                    fieldMap.put(samePrefixWord, tempKeys);
+                }
+            }
+            
+            // Add field label to map
+            if (form.getFieldType(field.getFieldName()) == AcroFields.FIELD_TYPE_TEXT) {
+                String lowerLabel = field.getFieldLabel().toLowerCase();
+
+                if (fieldMap.get(lowerLabel) != null) {
+                    tempKeys = (ArrayList<String>)fieldMap.get(lowerLabel);
+                    tempKeys.add(field.getFieldName());
+                } else {
+                    tempKeys = new ArrayList<>();
+                    tempKeys.add(field.getFieldName());
+                    fieldMap.put(lowerLabel, tempKeys);
+                }
+            }
+        }                
+
+        //for (String key : fields) { System.out.println(key);}
+/*       
         for (String key : fields) {
             temp = new AcroFormField();
             temp.setFieldName(key);
@@ -80,7 +148,7 @@ public class FormFiller {
                 }
             }
         }
-
+        System.out.println(fieldMap.get("email"));
         // Get field label and group
         RenderFilter filter;
         TextExtractionStrategy strategy;
@@ -112,9 +180,29 @@ public class FormFiller {
                 filter = new RegionTextRenderFilter(targetArea);
                 strategy = new FilteredTextRenderListener(new LocationTextExtractionStrategy(), filter);
                 currentField.setFieldValue(form.getField(currentField.getFieldName()));
-                currentField.setFieldLabel(PdfTextExtractor.getTextFromPage(reader, currentField.getPage(), strategy));                
-            }   
+                String fieldLabel = PdfTextExtractor.getTextFromPage(reader, currentField.getPage(), strategy);
+                fieldLabel = fieldLabel.replace(":", "");
+                fieldLabel = fieldLabel.replace("_", "");
+                fieldLabel = fieldLabel.trim();
+                currentField.setFieldLabel(fieldLabel); 
 
+                
+                // Match field label to field key
+                String lowerLabel = fieldLabel.toLowerCase();
+                ArrayList<String> tempKeys;
+                if (fieldMap.get(lowerLabel) != null) {
+                    tempKeys = (ArrayList<String>)fieldMap.get(lowerLabel);
+                    tempKeys.add(currentField.getFieldName());
+                } else {
+                    tempKeys = new ArrayList<>();
+                    tempKeys.add(currentField.getFieldName());
+                    fieldMap.put(lowerLabel, tempKeys);
+                }
+                System.out.println(fieldLabel);
+                System.out.println(fieldMap.get(lowerLabel));
+                
+            }   
+            
             if (i>0 && (isNewSection(currentField.getPosition(), previousField.getPosition()) || currentField.getPage() != previousField.getPage())) {
                 targetArea = new Rectangle(
                     0,                                          // lower left x
@@ -125,6 +213,7 @@ public class FormFiller {
                 filter = new RegionTextRenderFilter(targetArea);
                 strategy = new FilteredTextRenderListener(new LocationTextExtractionStrategy(), filter);
                 String tempGroup = PdfTextExtractor.getTextFromPage(reader, currentField.getPage(), strategy);
+                tempGroup = tempGroup.replace("_", "");
                 
                 if (!tempGroup.equals("")) {
                     group = tempGroup.split("\\(")[0].trim();
@@ -145,7 +234,7 @@ public class FormFiller {
             currentField.setGroup(group);
             previousField = fieldList.get(i);
         }
-        
+*/
         
         JSONArray dataArray = new JSONArray(data);
         for (int i=0; i<dataArray.length(); i++) {
@@ -158,13 +247,15 @@ public class FormFiller {
                 ArrayList<String> keyList = (ArrayList<String>)fieldMap.get(dataObject.getString("name"));
                 for (String key : keyList) {
                     AcroFormField field = (AcroFormField)objectMap.get(key);
-                    // Fill and process next if group match
-                    if (isGroupMatch(field, dataObject.getString("group"))) {
-                        form.setField(key, dataObject.getString("value"));
-                        field.setPersonalFieldName(dataObject.getString("name"));
-                        matchFound = true;
-                        break;
-                    }   
+                    if (form.getField(key).equals("")) {
+                        // Fill and process next if group match
+                        if (isGroupMatch(field, dataObject.getString("group"))) {
+                            form.setField(key, dataObject.getString("value"));
+                            field.setPersonalFieldName(dataObject.getString("name"));
+                            matchFound = true;
+                            break;
+                        }   
+                    }
                 }
             }
             
@@ -177,12 +268,14 @@ public class FormFiller {
                     ArrayList<String> keyList = (ArrayList<String>)fieldMap.get(standard);
                     for (String key : keyList) {
                         AcroFormField field = (AcroFormField)objectMap.get(key);
-                        // Fill and process next if group match
-                        if (isGroupMatch(field, dataObject.getString("group"))) {
-                            form.setField(key, dataObject.getString("value"));
-                            field.setPersonalFieldName(dataObject.getString("name"));
-                            break;
-                        } 
+                        if (form.getField(key).equals("")) {
+                            // Fill and process next if group match
+                            if (isGroupMatch(field, dataObject.getString("group"))) {
+                                form.setField(key, dataObject.getString("value"));
+                                field.setPersonalFieldName(dataObject.getString("name"));
+                                break;
+                            } 
+                        }
                     }
                 } else {
                     // standard is not the key
@@ -194,12 +287,14 @@ public class FormFiller {
                                 AcroFormField field = (AcroFormField)objectMap.get(key);
                                 // Fill and process next if group match
                                 //System.out.println(field.getFieldLabel() + " " + field.getGroup());
-                                if (isGroupMatch(field, dataObject.getString("group"))) {
-                                    form.setField(key, dataObject.getString("value"));
-                                    field.setPersonalFieldName(dataObject.getString("name"));
-                                    //System.out.println(fieldName);
-                                    matchFound = true;
-                                    break;
+                                if (form.getField(key).equals("")) {
+                                    if (isGroupMatch(field, dataObject.getString("group"))) {
+                                        form.setField(key, dataObject.getString("value"));
+                                        field.setPersonalFieldName(dataObject.getString("name"));
+                                        //System.out.println(fieldName);
+                                        matchFound = true;
+                                        break;
+                                    }
                                 }
                             }
                             // Process next if filled
@@ -211,37 +306,33 @@ public class FormFiller {
                 }
             }
         }
-        
+
         for (int i=0; i<fieldList.size(); i++) {
-            currentField = fieldList.get(i);
+            AcroFormField currentField = fieldList.get(i);
             if (form.getFieldType(currentField.getFieldName()) == AcroFields.FIELD_TYPE_TEXT) {
                 currentField.setFieldValue(form.getField(currentField.getFieldName()));
             }   
         }
-        
+
         stamper.close();
         reader.close();
 
         return fieldList;
     }
     
-    
-//    private boolean isGroupMatch(Connection con, AcroFormField field, String group) throws SQLException {
     private boolean isGroupMatch(AcroFormField field, String group) throws SQLException {
         Dictionary dictionary = Dictionary.getInstance();
         String fieldGroup;
-        
         if (field.getGroup() == null) {
             fieldGroup = "personal information";   
         } else {
             fieldGroup = field.getGroup().toLowerCase();
             fieldGroup = decodeGroupName(fieldGroup);
         }
-        
+
         String dataGroup = group.toLowerCase();
         dataGroup = decodeGroupName(dataGroup);
-        
-        //ArrayList<String> groupSynonyms = getSynonyms(fieldGroup, con);
+
         ArrayList<String> groupSynonyms = dictionary.getSynonyms(fieldGroup);
 
         // Default group is Perosnal Information
@@ -257,6 +348,7 @@ public class FormFiller {
             }
         } else if (fieldGroup.equals(dataGroup)) {  // Group matching not existing, try to create new matching
             // Exact match of Group name 
+            System.out.println("1st time");
             groupMap.put(group, field.getGroup());
             return true;
         } else {
@@ -272,111 +364,175 @@ public class FormFiller {
         return false;
     }
     
-    private boolean isSameLinePreviousField(Rectangle curFieldPosition, Rectangle preFieldPosition) {
-        return isOnRight(curFieldPosition, preFieldPosition) && isOnSameLine(curFieldPosition, preFieldPosition);
-    }
-    
-    private boolean isOnRight(Rectangle curFieldPosition, Rectangle preFieldPosition) {
-        return curFieldPosition.getLeft() > preFieldPosition.getRight();
-    }
-    
+
     private boolean isOnSameLine(Rectangle curFieldPosition, Rectangle preFieldPosition) {
         double dy = curFieldPosition.getTop()-preFieldPosition.getTop();
         return  dy < curFieldPosition.getHeight();
-    }
-    
-    private boolean isNewSection(Rectangle curFieldPosition, Rectangle preFieldPosition) {
-        return !isOnRight(curFieldPosition, preFieldPosition) && isSeperated(curFieldPosition, preFieldPosition);         
-    }
-    
-    private boolean isSeperated(Rectangle curFieldPosition, Rectangle preFieldPosition) {
-        double dy = preFieldPosition.getBottom()-curFieldPosition.getTop();
-        return dy > curFieldPosition.getHeight();
     }
     
     private String decodeGroupName(String originGroupName) {
         String[] tempGroupName = originGroupName.split(" ");
         try {
             Integer.parseInt(tempGroupName[tempGroupName.length-1]);
-            String decodedName = "";
-            for (int i=0; i<tempGroupName.length-2; i++) {
-                decodedName = decodedName + tempGroupName[i];
+            String decodedName = tempGroupName[0];
+            for (int i=1; i<tempGroupName.length-1; i++) {
+                decodedName = decodedName + " " + tempGroupName[i];
             }
             return decodedName;
         } catch (NumberFormatException e) {
             return originGroupName;
         }
     }
-    /*
-    private String getStandardWord(String word, Connection dictionaryCon) throws SQLException {
-        String standard = "";
-        PreparedStatement pstmt;
-        ResultSet rs;
-        
-        pstmt = dictionaryCon.prepareStatement(
-            "SELECT standard FROM Dictionary WHERE synonym = ? ORDER BY probability"
-        );
-        pstmt.setString(1, word);
-        rs = pstmt.executeQuery();
-        if (rs.next()) {
-            standard = rs.getString("standard");
-        }
-        return standard;
-    }
     
-    private ArrayList<String> getSynonyms(String word, Connection dictionaryCon) throws SQLException {
-        ArrayList<String> synonyms = new ArrayList<>();
-        PreparedStatement pstmt;
-        ResultSet rs;
+    // Test Add Acrobat Form Field
+    private void convertPDF(PdfReader reader, PdfStamper stamper) throws IOException, DocumentException {
+        ArrayList<FormText> fieldLabels = extractLabel(reader);
+        Collections.sort(fieldLabels);
+        HashMap nameMap = new HashMap();
         
-        String standard = getStandardWord(word, dictionaryCon);
-        pstmt = dictionaryCon.prepareStatement(
-            "SELECT synonym FROM Dictionary WHERE standard = ? OR standard = ? ORDER BY probability"
-        );
-        pstmt.setString(1, word);
-        pstmt.setString(2, standard); 
-        rs = pstmt.executeQuery();
-        while (rs.next()) {
-            synonyms.add(rs.getString("synonym"));
-        }
+        Rectangle pageSize = reader.getPageSize(1);
+        float margin = pageSize.getWidth()/20;
+        float right = pageSize.getRight(margin);
         
-        return synonyms;
-    }
-    
-    private ArrayList<String> getSamePrefixWords(String word, Connection dictionaryCon) throws SQLException {
-        ArrayList<String> samePrefixWords = new ArrayList<>();
-        PreparedStatement pstmt;
-        ResultSet rs;
-        
-        // Create search key
-        StringBuilder strBuilder = new StringBuilder(word);
-        strBuilder.insert(word.length(), "%");
-        for (int i=word.length()-1; i>0; i--) {
-            if (Character.isUpperCase(word.charAt(i))) {
-                strBuilder.insert(i, " %");
+        for (int i=0; i<fieldLabels.size()-1; i++) {
+            FormText curLabel = fieldLabels.get(i);
+            FormText nextLabel = fieldLabels.get(i+1);
+            Rectangle position;
+            if (isOnSameLine(curLabel.getPosition(), nextLabel.getPosition())) {
+                position = new Rectangle(
+                    curLabel.getPosition().getRight() + margin/5,
+                    curLabel.getPosition().getBottom(),
+                    nextLabel.getPosition().getLeft() - margin/5,
+                    curLabel.getPosition().getTop()
+                );
+            } else {
+                position = new Rectangle(
+                    curLabel.getPosition().getRight() + margin/5,
+                    curLabel.getPosition().getBottom(),
+                    right - margin/5,
+                    curLabel.getPosition().getTop()
+                );                
             }
-        }
-        String searchKey = strBuilder.toString().toLowerCase();
+            
+            String fieldLabel;
+            if (nameMap.get(curLabel.getName()) != null) {
+                int num = (int)nameMap.get(curLabel.getName());
+                num++;
+                fieldLabel = curLabel.getName() + " " + num;
+                nameMap.put(curLabel.getName(), num);
+            } else {
+                fieldLabel = curLabel.getName();
+                nameMap.put(curLabel.getName(), 1);
+            }
+        
+            TextField textfield = new TextField(
+                stamper.getWriter(),
+                position,
+                fieldLabel
+            );
 
-        pstmt = dictionaryCon.prepareStatement(
-            "SELECT standard FROM Dictionary WHERE standard LIKE ?"
-        );
-        pstmt.setString(1, searchKey);
-        rs = pstmt.executeQuery();
-        while (rs.next()) {
-            samePrefixWords.add(rs.getString("standard"));
+            PdfFormField field = textfield.getTextField();
+            field.setFieldName(fieldLabel);            
+            field.setPage(curLabel.getPage());
+            field.setPlaceInPage(curLabel.getPage());
+            stamper.addAnnotation(field, curLabel.getPage());
         }
+    }
+    
+    private ArrayList<FormText> extractLabel(PdfReader reader) throws IOException {
+        ArrayList<FormText> fieldLabels = new ArrayList<>();
+        
+        FormRenderListener listener = new FormRenderListener();
+        PdfContentStreamProcessor processor = new PdfContentStreamProcessor((RenderListener)listener);
 
-        pstmt = dictionaryCon.prepareStatement(
-            "SELECT synonym FROM Dictionary WHERE synonym LIKE ?"
-        );
-        pstmt.setString(1, searchKey);
-        rs = pstmt.executeQuery();
-        while (rs.next()) {
-            samePrefixWords.add(rs.getString("synonym"));
+        for (int i=1; i<=reader.getNumberOfPages(); i++) {
+            PdfDictionary pageDictionary = reader.getPageN(i);
+            PdfDictionary resourcesDictionary = pageDictionary.getAsDict(PdfName.RESOURCES);
+            processor.processContent(ContentByteUtils.getContentBytesForPage(reader, i), resourcesDictionary);
+            
+            ArrayList<FormText> formTexts = listener.getFormText();
+            
+            HashMap count = new HashMap();
+            for (FormText text : formTexts) {
+                //System.out.println("TEXT: " + text.getName() + " " + text.getPosition().getLeft() + " " + text.getPosition().getRight() + " " + text.getPosition().getTop() + " " + text.getPosition().getBottom());
+                float size = text.getPosition().getHeight();
+                if (count.get(size) != null) {
+                    count.put(size, (int)count.get(size) + 1);
+                } else {
+                    count.put(size, 1);
+                }
+            }
+
+            ArrayList<Float> keys = new ArrayList<>(count.keySet());
+            float generalSize = 0;
+            int maxCount = 0;
+            for (Float key : keys) {
+                if (maxCount < (int)count.get(key)) {
+                    generalSize = key;
+                    maxCount = (int)count.get(key);
+                }
+            }
+            
+            // Group individual text to be readable word
+            ArrayList<FormText> combinedTexts = new ArrayList<>();
+            String word = "";
+            Rectangle startRect = null;
+            FormText preText = null;
+            for (FormText text : formTexts) {
+                String str = text.getName();
+                str = str.replace("_", "");
+                if (!str.equals("")) {
+                    if (preText != null) {
+                        boolean sameLine = text.getPosition().getTop() == preText.getPosition().getTop() && text.getPosition().getBottom() == preText.getPosition().getBottom();
+                        boolean nearTo = text.getPosition().getLeft() - preText.getPosition().getRight() < text.getPosition().getWidth()/text.getName().length()*3;
+                        if (sameLine && nearTo) {
+                            word = word + text.getName().replace("_", "");
+                        } else {
+                            Rectangle position = new Rectangle(
+                                startRect.getLeft(),
+                                startRect.getBottom(),
+                                preText.getPosition().getRight(),
+                                startRect.getTop()
+                            );
+                            FormText combinedText = new FormText(word);
+                            combinedText.setPosition(position);
+                            combinedTexts.add(combinedText);
+
+                            // Reset word and startRect
+                            word = text.getName();
+                            startRect = text.getPosition();
+                        }
+                    } else {
+                        startRect = text.getPosition();
+                        word = "";
+                    }
+                    preText = text;
+                }
+            }
+            // Handle last cycle
+            if (!word.equals("")) {
+                Rectangle position = new Rectangle(
+                    startRect.getLeft(),
+                    startRect.getBottom(),
+                    preText.getPosition().getRight(),
+                    startRect.getTop()
+                );
+                FormText combinedText = new FormText(word);
+                combinedText.setPosition(position);
+                combinedTexts.add(combinedText);
+            }
+                     
+            for (FormText text : combinedTexts) {
+                if (text.getName().split(" ").length <= 3 && text.getPosition().getHeight() < generalSize*1.2) {
+                    text.setPage(i);
+                    fieldLabels.add(text);
+                }
+            }
+            
+            listener.reset();
+            processor.reset();
         }
         
-        return samePrefixWords;
+        return fieldLabels;
     }
-    */
 }

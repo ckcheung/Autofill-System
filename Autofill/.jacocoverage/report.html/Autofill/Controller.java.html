@@ -22,7 +22,7 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.json.JSONException;
 
-<span class="nc" id="L25">public class Controller extends HttpServlet {</span>
+<span class="fc" id="L25">public class Controller extends HttpServlet {</span>
     
     // upload settings
     private static final String DIRECTORY = &quot;form&quot;;
@@ -32,100 +32,98 @@ import org.json.JSONException;
     private static final String DBURL = &quot;jdbc:mysql://127.0.0.1:3307/Autofill&quot;;
     private static final String DBUsername = &quot;root&quot;;
     private static final String DBPassword = &quot;admin&quot;;
-    //private static Connection con;
-    //private static PreparedStatement pstmt;
-    //private static ResultSet rs;
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-<span class="nc" id="L41">        response.setContentType(&quot;text/html;charset=UTF-8&quot;);</span>
+<span class="nc" id="L38">        response.setContentType(&quot;text/html;charset=UTF-8&quot;);</span>
         
         String addr;
-<span class="nc" id="L44">        HttpSession session = request.getSession(true);</span>
+<span class="nc" id="L41">        HttpSession session = request.getSession(true);</span>
         //ps -ef | grep mysql
         
         try {
             //con = DriverManager.getConnection(DBURL, DBUsername, DBPassword);
-<span class="nc" id="L49">            String page = request.getParameter(&quot;page&quot;);</span>
-<span class="nc bnc" id="L50" title="All 2 branches missed.">            if (page == null) {</span>
-<span class="nc" id="L51">                addr = &quot;home.jsp&quot;;</span>
+<span class="nc" id="L46">            String page = request.getParameter(&quot;page&quot;);</span>
+<span class="nc bnc" id="L47" title="All 2 branches missed.">            if (page == null) {</span>
+<span class="nc" id="L48">                addr = &quot;home.jsp&quot;;</span>
             } else {
-<span class="nc bnc" id="L53" title="All 42 branches missed.">                switch (page) {</span>
+<span class="nc bnc" id="L50" title="All 42 branches missed.">                switch (page) {</span>
                     case &quot;register&quot;:
-<span class="nc bnc" id="L55" title="All 2 branches missed.">                        if (register(request)) {</span>
-<span class="nc" id="L56">                            addr = &quot;home.jsp&quot;;</span>
+<span class="nc bnc" id="L52" title="All 2 branches missed.">                        if (register(request)) {</span>
+<span class="nc" id="L53">                            addr = &quot;home.jsp&quot;;</span>
                         } else {
-<span class="nc" id="L58">                            addr = &quot;register.jsp&quot;;</span>
+<span class="nc" id="L55">                            addr = &quot;register.jsp&quot;;</span>
                         }
-<span class="nc" id="L60">                        break;</span>
+<span class="nc" id="L57">                        break;</span>
                     case &quot;login&quot;:
-<span class="nc bnc" id="L62" title="All 2 branches missed.">                        if (login(request)) {</span>
-<span class="nc" id="L63">                            addr = &quot;home.jsp&quot;;</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">                        if (login(request)) {</span>
+<span class="nc" id="L60">                            addr = &quot;home.jsp&quot;;</span>
                         } else {
-<span class="nc" id="L65">                            addr = &quot;home.jsp&quot;;</span>
+<span class="nc" id="L62">                            addr = &quot;home.jsp&quot;;</span>
                         }
-<span class="nc" id="L67">                        break;</span>
+<span class="nc" id="L64">                        break;</span>
                     case &quot;logout&quot;:
-<span class="nc" id="L69">                        session.setAttribute(&quot;user&quot;, null);</span>
-<span class="nc" id="L70">                        addr = &quot;home.jsp&quot;;</span>
-<span class="nc" id="L71">                        break;</span>
+<span class="nc" id="L66">                        session.setAttribute(&quot;user&quot;, null);</span>
+<span class="nc" id="L67">                        addr = &quot;home.jsp&quot;;</span>
+<span class="nc" id="L68">                        break;</span>
                     case &quot;record&quot;:
-<span class="nc" id="L73">                        addr = &quot;record.jsp&quot;;</span>
-<span class="nc" id="L74">                        break;</span>
+<span class="nc" id="L70">                        addr = &quot;record.jsp&quot;;</span>
+<span class="nc" id="L71">                        break;</span>
                     case &quot;save&quot;:
-<span class="nc" id="L76">                        String data = (String)session.getAttribute(&quot;data&quot;);</span>
-<span class="nc" id="L77">                        System.out.println(data);</span>
-<span class="nc" id="L78">                        addr = &quot;record.jsp&quot;;</span>
-<span class="nc" id="L79">                        break;</span>
+<span class="nc" id="L73">                        String data = (String)session.getAttribute(&quot;data&quot;);</span>
+<span class="nc" id="L74">                        System.out.println(data);</span>
+<span class="nc" id="L75">                        addr = &quot;record.jsp&quot;;</span>
+<span class="nc" id="L76">                        break;</span>
                     case &quot;fill&quot;:
-<span class="nc" id="L81">                        session.setAttribute(&quot;formList&quot;, createFormList());</span>
-<span class="nc" id="L82">                        addr = &quot;fill.jsp&quot;;</span>
-<span class="nc" id="L83">                        break;</span>
+<span class="nc" id="L78">                        session.setAttribute(&quot;formList&quot;, FormManager.getInstance().getFormList());</span>
+<span class="nc" id="L79">                        addr = &quot;fill.jsp&quot;;</span>
+<span class="nc" id="L80">                        break;</span>
                     case &quot;process&quot;:
-<span class="nc" id="L85">                        toProcessPage(request);</span>
-<span class="nc" id="L86">                        addr = &quot;process.jsp&quot;;</span>
-<span class="nc" id="L87">                        break;</span>
+<span class="nc" id="L82">                        toProcessPage(request);</span>
+<span class="nc" id="L83">                        addr = &quot;process.jsp&quot;;</span>
+<span class="nc" id="L84">                        break;</span>
                     case &quot;result&quot;:
-<span class="nc" id="L89">                        toResultPage(request);</span>
-<span class="nc" id="L90">                        addr = &quot;result.jsp&quot;;</span>
-<span class="nc" id="L91">                        break;</span>
+<span class="nc" id="L86">                        toResultPage(request);</span>
+<span class="nc" id="L87">                        addr = &quot;result.jsp&quot;;</span>
+<span class="nc" id="L88">                        break;</span>
                     case &quot;manage&quot;:
-<span class="nc" id="L93">                        addr = &quot;manage.jsp&quot;;</span>
-<span class="nc" id="L94">                        break;</span>
+<span class="nc" id="L90">                        toManagePage(request);</span>
+<span class="nc" id="L91">                        addr = &quot;manage.jsp&quot;;</span>
+<span class="nc" id="L92">                        break;</span>
                     case &quot;statistics&quot;:
-<span class="nc" id="L96">                        session.setAttribute(&quot;statistics&quot;, Dictionary.getInstance().getHistory());</span>
-<span class="nc" id="L97">                        addr = &quot;statistics.jsp&quot;;</span>
-<span class="nc" id="L98">                        break;</span>
+<span class="nc" id="L94">                        session.setAttribute(&quot;statistics&quot;, Dictionary.getInstance().getHistory());</span>
+<span class="nc" id="L95">                        addr = &quot;statistics.jsp&quot;;</span>
+<span class="nc" id="L96">                        break;</span>
                     default:
-<span class="nc" id="L100">                        addr = &quot;home.jsp&quot;;</span>
+<span class="nc" id="L98">                        addr = &quot;home.jsp&quot;;</span>
                         break;
                 }            
             }
-<span class="nc" id="L104">        } catch (Exception e) {</span>
-<span class="nc" id="L105">            addr = &quot;error.jsp&quot;;</span>
-<span class="nc" id="L106">        }</span>
+<span class="nc" id="L102">        } catch (Exception e) {</span>
+<span class="nc" id="L103">            addr = &quot;error.jsp&quot;;</span>
+<span class="nc" id="L104">        }</span>
         
-<span class="nc" id="L108">        RequestDispatcher dispatcher = request.getRequestDispatcher(addr);</span>
-<span class="nc" id="L109">        dispatcher.forward(request, response); </span>
+<span class="nc" id="L106">        RequestDispatcher dispatcher = request.getRequestDispatcher(addr);</span>
+<span class="nc" id="L107">        dispatcher.forward(request, response); </span>
         
-<span class="nc" id="L111">    }</span>
+<span class="nc" id="L109">    }</span>
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-<span class="nc" id="L116">        processRequest(request, response);</span>
-<span class="nc" id="L117">    }</span>
+<span class="nc" id="L114">        processRequest(request, response);</span>
+<span class="nc" id="L115">    }</span>
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-<span class="nc" id="L122">        processRequest(request, response);</span>
-<span class="nc" id="L123">    }</span>
+<span class="nc" id="L120">        processRequest(request, response);</span>
+<span class="nc" id="L121">    }</span>
 
     
     // User registration
     // Return true if success, otherwise return false
-    private boolean register(HttpServletRequest request) {
+    private boolean register(HttpServletRequest request) throws SQLException {
         /*
         if (request.getParameter(&quot;username&quot;) != null) {
             pstmt = con.prepareStatement(
@@ -143,16 +141,16 @@ import org.json.JSONException;
             return false;
         }
         */
-<span class="nc" id="L146">        Authentication authentication = Authentication.getInstance();</span>
-<span class="nc" id="L147">        String username = (String)request.getParameter(&quot;username&quot;);</span>
-<span class="nc" id="L148">        String password = (String)request.getParameter(&quot;password&quot;);</span>
-<span class="nc" id="L149">        boolean successful = authentication.register(username, password);</span>
-<span class="nc" id="L150">        return successful;</span>
+<span class="fc" id="L144">        AccountManager authentication = AccountManager.getInstance();</span>
+<span class="fc" id="L145">        String username = (String)request.getParameter(&quot;username&quot;);</span>
+<span class="fc" id="L146">        String password = (String)request.getParameter(&quot;password&quot;);</span>
+<span class="fc" id="L147">        boolean successful = authentication.register(username, password);</span>
+<span class="fc" id="L148">        return successful;</span>
     }
     
     // User login
     // Return true if success, otherwise return false
-    private boolean login(HttpServletRequest request) {
+    private boolean login(HttpServletRequest request) throws SQLException {
         /*
         if (request.getParameter(&quot;username&quot;) != null) {
             pstmt = con.prepareStatement(
@@ -181,15 +179,15 @@ import org.json.JSONException;
         }
         */
         
-<span class="nc" id="L184">        Authentication authentication = Authentication.getInstance();</span>
-<span class="nc" id="L185">        String username = (String)request.getParameter(&quot;username&quot;);</span>
-<span class="nc" id="L186">        String password = (String)request.getParameter(&quot;password&quot;);</span>
-<span class="nc" id="L187">        User user = authentication.authenticate(username, password);</span>
-<span class="nc bnc" id="L188" title="All 2 branches missed.">        if (user != null) {</span>
-<span class="nc" id="L189">            request.getSession().setAttribute(&quot;user&quot;, user);</span>
-<span class="nc" id="L190">            return true;</span>
+<span class="fc" id="L182">        AccountManager authentication = AccountManager.getInstance();</span>
+<span class="fc" id="L183">        String username = (String)request.getParameter(&quot;username&quot;);</span>
+<span class="fc" id="L184">        String password = (String)request.getParameter(&quot;password&quot;);</span>
+<span class="fc" id="L185">        User user = authentication.authenticate(username, password);</span>
+<span class="pc bpc" id="L186" title="1 of 2 branches missed.">        if (user != null) {</span>
+<span class="fc" id="L187">            request.getSession().setAttribute(&quot;user&quot;, user);</span>
+<span class="fc" id="L188">            return true;</span>
         } else {
-<span class="nc" id="L192">            return false;</span>
+<span class="nc" id="L190">            return false;</span>
         }
 
     }
@@ -197,117 +195,123 @@ import org.json.JSONException;
     // Return the name of the uplaoded file if success, otherwise return false
     private String fileUpload(HttpServletRequest request) throws IOException, FileUploadException, Exception {
         // checks if the request actually contains upload file
-<span class="nc bnc" id="L200" title="All 2 branches missed.">        if (ServletFileUpload.isMultipartContent(request)) {</span>
+<span class="nc bnc" id="L198" title="All 2 branches missed.">        if (ServletFileUpload.isMultipartContent(request)) {</span>
             // configures upload settings
-<span class="nc" id="L202">            DiskFileItemFactory factory = new DiskFileItemFactory();</span>
+<span class="nc" id="L200">            DiskFileItemFactory factory = new DiskFileItemFactory();</span>
             // sets memory threshold - beyond which files are stored in disk
-<span class="nc" id="L204">            factory.setSizeThreshold(MEMORY_THRESHOLD);</span>
+<span class="nc" id="L202">            factory.setSizeThreshold(MEMORY_THRESHOLD);</span>
             // sets temporary location to store files
-<span class="nc" id="L206">            factory.setRepository(new File(System.getProperty(&quot;java.io.tmpdir&quot;)));</span>
+<span class="nc" id="L204">            factory.setRepository(new File(System.getProperty(&quot;java.io.tmpdir&quot;)));</span>
 
-<span class="nc" id="L208">            ServletFileUpload upload = new ServletFileUpload(factory);</span>
+<span class="nc" id="L206">            ServletFileUpload upload = new ServletFileUpload(factory);</span>
 
             // sets maximum size of upload file
-<span class="nc" id="L211">            upload.setFileSizeMax(MAX_FILE_SIZE);</span>
+<span class="nc" id="L209">            upload.setFileSizeMax(MAX_FILE_SIZE);</span>
 
             // sets maximum size of request (include file + form data)
-<span class="nc" id="L214">            upload.setSizeMax(MAX_REQUEST_SIZE);</span>
+<span class="nc" id="L212">            upload.setSizeMax(MAX_REQUEST_SIZE);</span>
 
             // creates the directory if it does not exist
-<span class="nc" id="L217">            File uploadDir = new File(getServletContext().getRealPath(DIRECTORY));</span>
-<span class="nc bnc" id="L218" title="All 2 branches missed.">            if (!uploadDir.exists()) {</span>
-<span class="nc" id="L219">                uploadDir.mkdir();</span>
+<span class="nc" id="L215">            File uploadDir = new File(getServletContext().getRealPath(DIRECTORY));</span>
+<span class="nc bnc" id="L216" title="All 2 branches missed.">            if (!uploadDir.exists()) {</span>
+<span class="nc" id="L217">                uploadDir.mkdir();</span>
             }
 
             // parses the request's content to extract file data
             //@SuppressWarnings(&quot;unchecked&quot;)
-<span class="nc" id="L224">            List&lt;FileItem&gt; formItems = upload.parseRequest(request);</span>
+<span class="nc" id="L222">            List&lt;FileItem&gt; formItems = upload.parseRequest(request);</span>
 
-<span class="nc" id="L226">            String fileName = null;</span>
-<span class="nc" id="L227">            String filepath = null;</span>
-<span class="nc bnc" id="L228" title="All 4 branches missed.">            if (formItems != null &amp;&amp; formItems.size() &gt; 0) {</span>
-<span class="nc bnc" id="L229" title="All 2 branches missed.">                for (FileItem item : formItems) {</span>
+<span class="nc" id="L224">            String fileName = null;</span>
+<span class="nc" id="L225">            String filepath = null;</span>
+<span class="nc bnc" id="L226" title="All 4 branches missed.">            if (formItems != null &amp;&amp; formItems.size() &gt; 0) {</span>
+<span class="nc bnc" id="L227" title="All 2 branches missed.">                for (FileItem item : formItems) {</span>
                     // processes only fields that are not form fields
-<span class="nc bnc" id="L231" title="All 2 branches missed.">                    if (!item.isFormField()) {</span>
-<span class="nc" id="L232">                        fileName = new File(item.getName()).getName();</span>
-<span class="nc" id="L233">                        filepath = getServletContext().getRealPath(DIRECTORY + File.separator + fileName);</span>
-<span class="nc" id="L234">                        File storeFile = new File(filepath);</span>
-<span class="nc" id="L235">                        item.write(storeFile);</span>
+<span class="nc bnc" id="L229" title="All 2 branches missed.">                    if (!item.isFormField()) {</span>
+<span class="nc" id="L230">                        fileName = new File(item.getName()).getName();</span>
+<span class="nc" id="L231">                        filepath = getServletContext().getRealPath(DIRECTORY + File.separator + fileName);</span>
+<span class="nc" id="L232">                        File storeFile = new File(filepath);</span>
+<span class="nc" id="L233">                        item.write(storeFile);</span>
                     }
-<span class="nc" id="L237">                }</span>
+<span class="nc" id="L235">                }</span>
+<span class="nc" id="L236">                FormManager formManager = FormManager.getInstance();</span>
+<span class="nc" id="L237">                formManager.addForm(fileName);</span>
+<span class="nc" id="L238">                return fileName;</span>
             }
 
-<span class="nc" id="L240">            Connection con = null;</span>
-<span class="nc" id="L241">            PreparedStatement pstmt = null;</span>
-<span class="nc" id="L242">            ResultSet rs = null;</span>
+
+            /*
+            Connection con = null;
+            PreparedStatement pstmt = null;
+            ResultSet rs = null;
             try {
-<span class="nc" id="L244">                con = DriverManager.getConnection(DBURL, DBUsername, DBPassword);</span>
+                con = DriverManager.getConnection(DBURL, DBUsername, DBPassword);
                 //Store file information to database
-<span class="nc" id="L246">                pstmt = con.prepareStatement(</span>
+                pstmt = con.prepareStatement(
                     &quot;INSERT INTO Form VALUES (?, ?)&quot;
                 );
-<span class="nc" id="L249">                pstmt.setString(1, fileName);</span>
-<span class="nc" id="L250">                pstmt.setString(2, fileName.substring(0, fileName.lastIndexOf('.')));</span>
-<span class="nc" id="L251">                pstmt.executeUpdate();</span>
-<span class="nc" id="L252">            } catch (Exception e) {</span>
+                pstmt.setString(1, fileName);
+                pstmt.setString(2, fileName.substring(0, fileName.lastIndexOf('.')));
+                pstmt.executeUpdate();
+            } catch (Exception e) {
                 } finally {
-<span class="nc" id="L254">                try {</span>
-<span class="nc bnc" id="L255" title="All 6 branches missed.">                    if (con != null) {con.close();}</span>
-<span class="nc bnc" id="L256" title="All 6 branches missed.">                    if (pstmt != null) {con.close();}</span>
-<span class="nc bnc" id="L257" title="All 6 branches missed.">                    if (rs != null) {con.close();}</span>
-<span class="nc" id="L258">                } catch (Exception e) {</span>
+                try {
+                    if (con != null) {con.close();}
+                    if (pstmt != null) {con.close();}
+                    if (rs != null) {con.close();}
+                } catch (Exception e) {
 
-<span class="nc" id="L260">                }</span>
-<span class="nc" id="L261">            }</span>
+                }
+            }
 
-<span class="nc" id="L263">            return fileName;</span>
-
+            return fileName;
+            */
         }
-<span class="nc" id="L266">        return null;</span>
+<span class="nc" id="L269">        return null;</span>
     }
     
+    /*
     private ArrayList&lt;PDFForm&gt; createFormList() {
-<span class="nc" id="L270">        ArrayList&lt;PDFForm&gt; formList = new ArrayList();</span>
+        ArrayList&lt;PDFForm&gt; formList = new ArrayList();
         
-<span class="nc" id="L272">        Connection con = null;</span>
-<span class="nc" id="L273">        PreparedStatement pstmt = null;</span>
-<span class="nc" id="L274">        ResultSet rs = null;</span>
+        Connection con = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
         
         try {
-<span class="nc" id="L277">            con = DriverManager.getConnection(DBURL, DBUsername, DBPassword);</span>
-<span class="nc" id="L278">            pstmt = con.prepareStatement(</span>
+            con = DriverManager.getConnection(DBURL, DBUsername, DBPassword);
+            pstmt = con.prepareStatement(
                 &quot;SELECT * FROM Form ORDER BY name&quot;
             );
-<span class="nc" id="L281">            rs = pstmt.executeQuery();</span>
-<span class="nc bnc" id="L282" title="All 2 branches missed.">            while (rs.next()) {</span>
-<span class="nc" id="L283">                PDFForm form = new PDFForm();</span>
-<span class="nc" id="L284">                form.setName(rs.getString(&quot;name&quot;));</span>
-<span class="nc" id="L285">                form.setDescription(rs.getString(&quot;description&quot;));</span>
-<span class="nc" id="L286">                formList.add(form);</span>
-<span class="nc" id="L287">            }</span>
-<span class="nc" id="L288">        } catch (Exception e) {</span>
+            rs = pstmt.executeQuery();
+            while (rs.next()) {
+                PDFForm form = new PDFForm();
+                form.setName(rs.getString(&quot;name&quot;));
+                form.setDescription(rs.getString(&quot;description&quot;));
+                formList.add(form);
+            }
+        } catch (Exception e) {
             
         } finally {
-<span class="nc" id="L291">            try {</span>
-<span class="nc bnc" id="L292" title="All 6 branches missed.">                if (con != null) {con.close();}</span>
-<span class="nc bnc" id="L293" title="All 6 branches missed.">                if (pstmt != null) {con.close();}</span>
-<span class="nc bnc" id="L294" title="All 6 branches missed.">                if (rs != null) {con.close();}</span>
-<span class="nc" id="L295">            } catch (Exception e) {</span>
+            try {
+                if (con != null) {con.close();}
+                if (pstmt != null) {con.close();}
+                if (rs != null) {con.close();}
+            } catch (Exception e) {
                 
-<span class="nc" id="L297">            }</span>
-<span class="nc" id="L298">        }</span>
+            }
+        }
         
-<span class="nc" id="L300">        return formList;</span>
+        return formList;
     }
-    
+    */
     private void toProcessPage(HttpServletRequest request) throws IOException, FileUploadException, DocumentException, JSONException, Exception {
-<span class="nc" id="L304">        String filepath = request.getParameter(&quot;formPath&quot;);</span>
-<span class="nc" id="L305">        System.out.println(filepath);</span>
-<span class="nc bnc" id="L306" title="All 2 branches missed.">        if (filepath == null) {</span>
-<span class="nc" id="L307">            filepath = fileUpload(request);</span>
+<span class="nc" id="L308">        String filepath = request.getParameter(&quot;formPath&quot;);</span>
+<span class="nc" id="L309">        System.out.println(filepath);</span>
+<span class="nc bnc" id="L310" title="All 2 branches missed.">        if (filepath == null) {</span>
+<span class="nc" id="L311">            filepath = fileUpload(request);</span>
         } 
-<span class="nc" id="L309">        User user = ((User)request.getSession().getAttribute(&quot;user&quot;));</span>
-<span class="nc" id="L310">        FormFiller filler = new FormFiller(getServletContext().getRealPath(DIRECTORY + File.separator + filepath));</span>
+<span class="nc" id="L313">        User user = ((User)request.getSession().getAttribute(&quot;user&quot;));</span>
+<span class="nc" id="L314">        FormFiller filler = new FormFiller(getServletContext().getRealPath(DIRECTORY + File.separator + filepath));</span>
         /*
         ArrayList&lt;AcroFormField&gt; fields = filler.fillPdf(
             getServletContext().getRealPath(DIRECTORY + File.separator + &quot;temp.pdf&quot;), 
@@ -317,27 +321,27 @@ import org.json.JSONException;
             rs
         );
         */
-<span class="nc" id="L320">        ArrayList&lt;AcroFormField&gt; fields = filler.fillPdf(</span>
-<span class="nc" id="L321">            getServletContext().getRealPath(DIRECTORY + File.separator + &quot;temp.pdf&quot;), </span>
-<span class="nc" id="L322">            user.getData()</span>
+<span class="nc" id="L324">        ArrayList&lt;AcroFormField&gt; fields = filler.fillPdf(</span>
+<span class="nc" id="L325">            getServletContext().getRealPath(DIRECTORY + File.separator + &quot;temp.pdf&quot;), </span>
+<span class="nc" id="L326">            user.getData()</span>
         );
-<span class="nc" id="L324">        request.getSession().setAttribute(&quot;fields&quot;, fields);</span>
+<span class="nc" id="L328">        request.getSession().setAttribute(&quot;fields&quot;, fields);</span>
 
-<span class="nc" id="L326">    }</span>
+<span class="nc" id="L330">    }</span>
     
-    private void toResultPage(HttpServletRequest request) throws IOException, DocumentException {
-<span class="nc" id="L329">        Dictionary dictionary = Dictionary.getInstance();</span>
-<span class="nc" id="L330">        HttpSession session = request.getSession();</span>
-<span class="nc" id="L331">        ArrayList&lt;AcroFormField&gt; fields = (ArrayList&lt;AcroFormField&gt;)session.getAttribute(&quot;fields&quot;);</span>
+    private void toResultPage(HttpServletRequest request) throws IOException, DocumentException, SQLException {
+<span class="nc" id="L333">        Dictionary dictionary = Dictionary.getInstance();</span>
+<span class="nc" id="L334">        HttpSession session = request.getSession();</span>
+<span class="nc" id="L335">        ArrayList&lt;AcroFormField&gt; fields = (ArrayList&lt;AcroFormField&gt;)session.getAttribute(&quot;fields&quot;);</span>
 
-<span class="nc" id="L333">        PdfReader reader = new PdfReader(getServletContext().getRealPath(DIRECTORY + File.separator + &quot;temp.pdf&quot;)); </span>
-<span class="nc" id="L334">        PdfStamper stamper = new PdfStamper(reader, new FileOutputStream(getServletContext().getRealPath(DIRECTORY + File.separator + &quot;result.pdf&quot;)));</span>
-<span class="nc" id="L335">        AcroFields form = stamper.getAcroFields();</span>
+<span class="nc" id="L337">        PdfReader reader = new PdfReader(getServletContext().getRealPath(DIRECTORY + File.separator + &quot;temp.pdf&quot;)); </span>
+<span class="nc" id="L338">        PdfStamper stamper = new PdfStamper(reader, new FileOutputStream(getServletContext().getRealPath(DIRECTORY + File.separator + &quot;result.pdf&quot;)));</span>
+<span class="nc" id="L339">        AcroFields form = stamper.getAcroFields();</span>
 
-<span class="nc bnc" id="L337" title="All 2 branches missed.">        for (AcroFormField field : fields) {</span>
-<span class="nc bnc" id="L338" title="All 4 branches missed.">            if (field.getFieldLabel() != null &amp;&amp; field.getFieldLabel().length() != 0) {</span>
-<span class="nc bnc" id="L339" title="All 2 branches missed.">                if (!request.getParameter(field.getFieldName() + &quot;_option&quot;).equals(&quot;&quot;)) {</span>
-<span class="nc bnc" id="L340" title="All 2 branches missed.">                    if (form.getField(field.getFieldName()).equals(&quot;&quot;)) {</span>
+<span class="nc bnc" id="L341" title="All 2 branches missed.">        for (AcroFormField field : fields) {</span>
+<span class="nc bnc" id="L342" title="All 4 branches missed.">            if (field.getFieldLabel() != null &amp;&amp; field.getFieldLabel().length() != 0) {</span>
+<span class="nc bnc" id="L343" title="All 2 branches missed.">                if (!request.getParameter(field.getFieldName() + &quot;_option&quot;).equals(&quot;&quot;)) {</span>
+<span class="nc bnc" id="L344" title="All 2 branches missed.">                    if (form.getField(field.getFieldName()).equals(&quot;&quot;)) {</span>
                         // Add synonym to dictionary
                         /*
                         String personalFieldName = request.getParameter(field.getFieldName() + &quot;_personalFieldName&quot;);
@@ -350,9 +354,9 @@ import org.json.JSONException;
                         pstmt.setString(4, &quot;[{\&quot;word1\&quot;: \&quot;&quot; + personalFieldName + &quot;\&quot;, \&quot;word2\&quot;: \&quot;&quot; + field.getFieldName().toLowerCase() + &quot;\&quot;, \&quot;probability\&quot;: \&quot;0.5\&quot;&quot;);
                         pstmt.executeUpdate();
                         */
-<span class="nc" id="L353">                        String personalFieldName = request.getParameter(field.getFieldName() + &quot;_personalFieldName&quot;);</span>
-<span class="nc" id="L354">                        dictionary.addSynonym(personalFieldName, field.getFieldName().toLowerCase());</span>
-<span class="nc bnc" id="L355" title="All 2 branches missed.">                    } else if (!form.getField(field.getFieldName()).equals(request.getParameter(field.getFieldName()))) {</span>
+<span class="nc" id="L357">                        String personalFieldName = request.getParameter(field.getFieldName() + &quot;_personalFieldName&quot;);</span>
+<span class="nc" id="L358">                        dictionary.addSynonym(personalFieldName, field.getFieldName().toLowerCase());</span>
+<span class="nc bnc" id="L359" title="All 2 branches missed.">                    } else if (!form.getField(field.getFieldName()).equals(request.getParameter(field.getFieldName()))) {</span>
                         // Reduce synonym's probability in dictionary
                         /*
                         pstmt = con.prepareStatement(
@@ -427,23 +431,23 @@ import org.json.JSONException;
                             }
                         }
                         */
-<span class="nc" id="L430">                        dictionary.reduceProbability(field.getPersonalFieldName(), field.getFieldName().toLowerCase());</span>
+<span class="nc" id="L434">                        dictionary.reduceProbability(field.getPersonalFieldName(), field.getFieldName().toLowerCase());</span>
                     }
 
-<span class="nc bnc" id="L433" title="All 2 branches missed.">                    if (!form.getField(field.getFieldName()).equals(request.getParameter(field.getFieldName()))) {</span>
+<span class="nc bnc" id="L437" title="All 2 branches missed.">                    if (!form.getField(field.getFieldName()).equals(request.getParameter(field.getFieldName()))) {</span>
                         // Refill that field if it is changed by user
-<span class="nc" id="L435">                        form.setField(</span>
-<span class="nc" id="L436">                            field.getFieldName(), </span>
-<span class="nc" id="L437">                            request.getParameter(field.getFieldName())</span>
+<span class="nc" id="L439">                        form.setField(</span>
+<span class="nc" id="L440">                            field.getFieldName(), </span>
+<span class="nc" id="L441">                            request.getParameter(field.getFieldName())</span>
                         );
                     }
                 }
 
                 // Matching correct or user perform matching
-<span class="nc bnc" id="L443" title="All 4 branches missed.">                if ((request.getParameter(field.getFieldName() + &quot;_option&quot;).equals(&quot;&quot;) &amp;&amp; !request.getParameter(field.getFieldName()).equals(&quot;&quot;)) ||</span>
-<span class="nc bnc" id="L444" title="All 6 branches missed.">                    (!request.getParameter(field.getFieldName() + &quot;_option&quot;).equals(&quot;&quot;) &amp;&amp; !form.getField(field.getFieldName()).equals(&quot;&quot;) &amp;&amp; !form.getField(field.getFieldName()).equals(request.getParameter(field.getFieldName())))) {</span>
+<span class="nc bnc" id="L447" title="All 4 branches missed.">                if ((request.getParameter(field.getFieldName() + &quot;_option&quot;).equals(&quot;&quot;) &amp;&amp; !request.getParameter(field.getFieldName()).equals(&quot;&quot;)) ||</span>
+<span class="nc bnc" id="L448" title="All 6 branches missed.">                    (!request.getParameter(field.getFieldName() + &quot;_option&quot;).equals(&quot;&quot;) &amp;&amp; !form.getField(field.getFieldName()).equals(&quot;&quot;) &amp;&amp; !form.getField(field.getFieldName()).equals(request.getParameter(field.getFieldName())))) {</span>
                     // Increase probability
-<span class="nc" id="L446">                    String personalFieldName = request.getParameter(field.getFieldName() + &quot;_personalFieldName&quot;);</span>
+<span class="nc" id="L450">                    String personalFieldName = request.getParameter(field.getFieldName() + &quot;_personalFieldName&quot;);</span>
                     
                     /*
                     // Standard to synonym matching
@@ -527,14 +531,14 @@ import org.json.JSONException;
                     pstmt.executeUpdate();
                     
                     */
-<span class="nc" id="L530">                    dictionary.addProbability(personalFieldName, field.getFieldName().toLowerCase());</span>
+<span class="nc" id="L534">                    dictionary.addProbability(personalFieldName, field.getFieldName().toLowerCase());</span>
                 }
             }
-<span class="nc" id="L533">        }</span>
-<span class="nc" id="L534">        stamper.close();</span>
-<span class="nc" id="L535">        reader.close();</span>
+<span class="nc" id="L537">        }</span>
+<span class="nc" id="L538">        stamper.close();</span>
+<span class="nc" id="L539">        reader.close();</span>
 
-<span class="nc" id="L537">    }</span>
+<span class="nc" id="L541">    }</span>
     
     /*
     private void getHistory(HttpServletRequest request) throws SQLException {
@@ -609,5 +613,22 @@ import org.json.JSONException;
         return new String(str);
     }
     */
+    
+    private void toManagePage(HttpServletRequest request) throws SQLException {
+<span class="nc" id="L618">        AccountManager accountManager = AccountManager.getInstance();</span>
+<span class="nc" id="L619">        FormManager formManager = FormManager.getInstance();</span>
+        
+<span class="nc" id="L621">        String action = request.getParameter(&quot;action&quot;);</span>
+<span class="nc bnc" id="L622" title="All 2 branches missed.">        if (action != null) {</span>
+<span class="nc bnc" id="L623" title="All 2 branches missed.">            if (action.equals(&quot;deleteAccount&quot;)) {</span>
+<span class="nc" id="L624">                accountManager.deleteAccount(request.getParameter(&quot;userName&quot;));</span>
+<span class="nc bnc" id="L625" title="All 2 branches missed.">            } else if (action.equals(&quot;deleteForm&quot;)) {</span>
+<span class="nc" id="L626">                formManager.deleteForm(request.getParameter(&quot;formName&quot;));</span>
+            }
+        }
+        
+<span class="nc" id="L630">        request.getSession().setAttribute(&quot;userList&quot;, accountManager.getUserList());</span>
+<span class="nc" id="L631">        request.getSession().setAttribute(&quot;formList&quot;, formManager.getFormList());</span>
+<span class="nc" id="L632">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

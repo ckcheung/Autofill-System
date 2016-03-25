@@ -61,7 +61,7 @@ public class Dictionary {
     }
     
     public String getStandardWord(String word) throws SQLException {
-        String standard = "";
+        String standard = null;
         Connection con = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
@@ -221,8 +221,7 @@ public class Dictionary {
         Connection con = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
-        // personalFieldName = word1
-        // field.getFieldName().toLowerCase() = word2
+ 
         try {
             con = DriverManager.getConnection(DBURL, DBUsername, DBPassword);
             pstmt = con.prepareStatement(
@@ -230,7 +229,6 @@ public class Dictionary {
             );                      
             pstmt.setString(1, word1);
             pstmt.setString(2, word2);
-            System.out.println("TEST3 - " + pstmt);
             rs = pstmt.executeQuery();
             if (rs.next()) {
                 float probability = rs.getFloat("probability");
@@ -245,7 +243,6 @@ public class Dictionary {
                 pstmt.setString(3, word1);
                 pstmt.setString(4, word2);
                 pstmt.executeUpdate();
-                //System.out.println("History : " + addHistory(history, formatHistoryRecord(personalFieldName, field.getFieldName().toLowerCase(), probability)));
                 adjusted = true;
             }
 
@@ -273,7 +270,6 @@ public class Dictionary {
                     pstmt.setString(4, word1);
                     System.out.println(pstmt);
                     pstmt.executeUpdate();
-                    //System.out.println("History : " + addHistory(history, formatHistoryRecord(field.getPersonalFieldName(), field.getFieldName().toLowerCase(), probability)));
                     adjusted = true;
                 }
             }
@@ -303,8 +299,6 @@ public class Dictionary {
                     pstmt.setString(2, standard);
                     pstmt.setString(3, word2);
                     pstmt.setString(4, word1);
-                    System.out.println("TEST5 - " + pstmt);
-                    //System.out.println("History : " + addHistory(history, formatHistoryRecord(personalFieldName, field.getFieldName().toLowerCase(), probability)));
                     pstmt.executeUpdate();
                     adjusted = true;
                 }
@@ -332,8 +326,6 @@ public class Dictionary {
         ResultSet rs = null;
         float adjustment = -0.1f;
         
-        // word1 = field.getPersonalFieldName()
-        // word2 = field.getFieldName().toLowerCase()
         try {
             con = DriverManager.getConnection(DBURL, DBUsername, DBPassword);
             pstmt = con.prepareStatement(
@@ -341,22 +333,12 @@ public class Dictionary {
             );
             pstmt.setString(1, word1);
             pstmt.setString(2, word2);
-            //System.out.println("TEST " + pstmt);
             rs = pstmt.executeQuery();
             if (rs.next()) {
                 float probability = rs.getFloat("probability");
                 String history = rs.getString("history");
                 probability = Math.max(0, (float)(Math.round((probability + adjustment)*10))/10);
                 if (probability == 0) {
-                    // Remove entry
-                    /*
-                    pstmt = con.prepareStatement(
-                        "DELETE FROM Dictionary WHERE standard = ? AND synonym = ?"
-                    );
-                    pstmt.setString(1, word1);
-                    pstmt.setString(2, word2);
-                    pstmt.executeUpdate();
-                    */
                     removeSynonym(word1, word2);
                 } else {
                     // Update probability
@@ -369,9 +351,7 @@ public class Dictionary {
                     pstmt.setString(3, word1);
                     pstmt.setString(4, word2);
                     pstmt.executeUpdate();                                        
-                    //System.out.println("History : " + addHistory(history, formatHistoryRecord(field.getPersonalFieldName(), field.getFieldName().toLowerCase(), probability)));
                 }
-                //System.out.println("TEST2 " + pstmt);
                 adjusted = true;
             } 
             
