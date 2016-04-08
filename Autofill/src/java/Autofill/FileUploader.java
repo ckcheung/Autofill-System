@@ -57,8 +57,6 @@ public class FileUploader {
                         item.write(storeFile);
                     }
                 }
-                FormManager formManager = FormManager.getInstance();
-                formManager.addForm(fileName);
                 return fileName;
             }
         }

@@ -153,9 +153,13 @@ public class Controller extends HttpServlet {
         String filepath = request.getParameter("formPath");
         System.out.println(filepath);
         if (filepath == null) {
+            // Upload form
             FileUploader uploader = FileUploader.getInstance();
             String directory = getServletContext().getRealPath(FORM_DIRECTORY);
             filepath = uploader.upload(request, directory, null);
+            // Add form to database
+            FormManager formManager = FormManager.getInstance();
+            formManager.addForm(filepath);
         } 
         System.out.println(filepath);
         User user = ((User)request.getSession().getAttribute("user"));
@@ -188,6 +192,8 @@ public class Controller extends HttpServlet {
                     if (!request.getParameter(option).equals("")) {
                         if (form.getField(field.getFieldName()).equals("")) {
                             // Add synonym to dictionary
+                                                    System.out.println("******TESTING 1");
+
                             String personalFieldName = request.getParameter(field.getFieldName() + "_personalFieldName");
                             dictionary.addSynonym(personalFieldName, field.getFieldName().toLowerCase());
                             System.out.println(personalFieldName + " " + field.getFieldName());
@@ -198,6 +204,10 @@ public class Controller extends HttpServlet {
 
                         if (!form.getField(field.getFieldName()).equals(request.getParameter(field.getFieldName()))) {
                             // Refill that field if it is changed by user
+                                                    System.out.println("******TESTING 2");
+                                                    System.out.println(field.getFieldName());
+                                                    System.out.println(request.getParameter(field.getFieldName()));
+
                             form.setField(
                                 field.getFieldName(), 
                                 request.getParameter(field.getFieldName())
@@ -209,6 +219,7 @@ public class Controller extends HttpServlet {
                     if ((request.getParameter(field.getFieldName() + "_option").equals("") && !request.getParameter(field.getFieldName()).equals("")) ||
                         (!request.getParameter(field.getFieldName() + "_option").equals("") && !form.getField(field.getFieldName()).equals("") && !form.getField(field.getFieldName()).equals(request.getParameter(field.getFieldName())))) {
                         // Increase probability
+                        System.out.println("******TESTING 3");
                         String personalFieldName = request.getParameter(field.getFieldName() + "_personalFieldName");
                         dictionary.addProbability(personalFieldName, field.getFieldName().toLowerCase());
                     }
@@ -219,7 +230,7 @@ public class Controller extends HttpServlet {
         stamper.close();
         reader.close();
 
-        session.setAttribute("filepath", request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + request.getRequestURI() + "/" + FORM_DIRECTORY + File.separator + user.getUsername() + ".pdf");
+        session.setAttribute("filepath", request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + request.getRequestURI() + "/" + FORM_DIRECTORY + File.separator + "result.pdf");
     }
     
     private void toManagePage(HttpServletRequest request) throws SQLException {
