@@ -29,13 +29,22 @@ public class DBUtil {
         return DriverManager.getConnection(DBURL, DBUsername, DBPassword);
     }
     
-    public void closeDBObjects(Connection con, PreparedStatement pstmt, ResultSet rs) throws SQLException {
+    public void closeDBObjects(Connection con, PreparedStatement pstmt) {
+        try {
+            if (pstmt != null) {pstmt.close();}
+            if (con != null) {con.close();}
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public void closeDBObjects(Connection con, PreparedStatement pstmt, ResultSet rs) {
         try {
             if (rs != null) {rs.close();}
             if (pstmt != null) {pstmt.close();}
             if (con != null) {con.close();}
         } catch (SQLException e) {
-            throw e;
+            e.printStackTrace();
         }
     }
 }

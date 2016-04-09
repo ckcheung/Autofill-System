@@ -37,7 +37,6 @@ public class FormFiller {
     public ArrayList<AcroFormField> fillPdf(String dest, String data) throws IOException, DocumentException, JSONException, SQLException {
         Dictionary dictionary = Dictionary.getInstance();
         PdfReader reader = new PdfReader(sourceFilePath); 
-        //PdfStamper stamper = new PdfStamper(reader, new FileOutputStream(dest));
         PdfStamper stamper = null;
         AcroFields form = reader.getAcroFields();
         
@@ -109,7 +108,6 @@ public class FormFiller {
         for (int i=0; i<dataArray.length(); i++) {
             boolean matchFound = false;
             JSONObject dataObject = dataArray.getJSONObject(i);
-            System.out.println(dataArray.get(i));
             
             if (fieldMap.get(dataObject.getString("name")) != null) {
                 // Exact match
@@ -249,7 +247,7 @@ public class FormFiller {
         }
     }
     
-    // Test Add Acrobat Form Field
+    // Add Acrobat form fields
     private void convertPDF(PdfReader reader, PdfStamper stamper) throws IOException, DocumentException {
         ArrayList<FormText> fieldLabels = extractLabel(reader);
         Collections.sort(fieldLabels);
@@ -304,6 +302,7 @@ public class FormFiller {
         }
     }
     
+    // Extract label from PDF
     private ArrayList<FormText> extractLabel(PdfReader reader) throws IOException {
         ArrayList<FormText> fieldLabels = new ArrayList<>();
         
@@ -319,7 +318,6 @@ public class FormFiller {
             
             HashMap count = new HashMap();
             for (FormText text : formTexts) {
-                //System.out.println("TEXT: " + text.getName() + " " + text.getPosition().getLeft() + " " + text.getPosition().getRight() + " " + text.getPosition().getTop() + " " + text.getPosition().getBottom());
                 float size = text.getPosition().getHeight();
                 if (count.get(size) != null) {
                     count.put(size, (int)count.get(size) + 1);
