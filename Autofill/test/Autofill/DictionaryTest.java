@@ -628,7 +628,7 @@ public class DictionaryTest {
         
         Dictionary dictionary = Dictionary.getInstance();
         boolean successful = dictionary.reduceProbability(word1, word2);
-        assertEquals(true, successful); 
+        assertEquals(true, successful);
     }
   
     // Successfully reduce probability for an existing synonym-to-synonym matching 
@@ -675,7 +675,7 @@ public class DictionaryTest {
         
         Dictionary dictionary = Dictionary.getInstance();
         boolean successful = dictionary.reduceProbability(word1, word2);
-        assertEquals(true, successful); 
+        assertEquals(true, successful);
     }
     
     // Fail to reduce probability 

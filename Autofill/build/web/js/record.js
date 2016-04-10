@@ -459,7 +459,7 @@ deleteGroupRecord = function() {
 	// If some records belong to this group, abort action
 	for (var j=0; j<data.length; j++) {
 		if (data[j].group == group[i].name) {
-			alert("Group cannot be delete because it is in used by some fields.");
+			alert("Group Cannot Be Deleted Because It Is In Use By Some Fields.");
 			return;
 		}
 	}

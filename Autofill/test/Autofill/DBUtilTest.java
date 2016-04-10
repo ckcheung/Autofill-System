@@ -93,6 +93,7 @@ public class DBUtilTest {
     // Exception throw when close object
     @Test(expected = SQLException.class)
     public void testCloseDBObjectsThrow() throws SQLException {
+        assertEquals(true, true);
         ResultSet rs = mock(ResultSet.class);
         doThrow(new SQLException()).when(rs).close();
 
